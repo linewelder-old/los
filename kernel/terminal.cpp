@@ -18,13 +18,34 @@ namespace terminal {
     static size_t column = 0;
     static uint8_t color = vga_entry_color(Color::LIGHT_GREY, Color::BLACK);
 
+    static inline uint16_t& buffer_entry(size_t x, size_t y) {
+        return BUFFER[y * WIDTH + x];
+    }
+
+    static void next_line() {
+        if (row == HEIGHT - 1) {
+            for (size_t y = 0; y < HEIGHT - 1; y++) {
+                for (size_t x = 0; x < WIDTH; x++) {
+                    buffer_entry(x, y) = buffer_entry(x, y + 1);
+                }
+            }
+
+            for (size_t x = 0; x < WIDTH; x++) {
+                put_entry_at(' ',
+                    terminal::Color::LIGHT_GREY, terminal::Color::BLACK,
+                    x, HEIGHT - 1);
+            }
+        } else {
+            row++;
+        }
+    }
+
     void set_color(Color fg, Color bg) {
         color = vga_entry_color(fg, bg);
     }
 
     void put_entry_at(char ch, Color fg, Color bg, size_t x, size_t y) {
-        const size_t index = y * WIDTH + x;
-        BUFFER[index] = vga_entry(ch, vga_entry_color(fg, bg));
+        buffer_entry(x, y) = vga_entry(ch, vga_entry_color(fg, bg));
     }
 
     void clear() {
@@ -40,24 +61,17 @@ namespace terminal {
     void putchar(char ch) {
         switch (ch) {
             case '\n':
-                row++;
-                if (row == HEIGHT) {
-                    row = 0;
-                }
+                next_line();
                 column = 0;
                 break;
 
             default: {
-                const size_t index = row * WIDTH + column;
-                BUFFER[index] = vga_entry(ch, color);
+                buffer_entry(column, row) = vga_entry(ch, color);
 
                 column++;
                 if (column == WIDTH) {
                     column = 0;
-                    row++;
-                    if (row == HEIGHT) {
-                        row = 0;
-                    }
+                    next_line();
                 }
 
                 break;
