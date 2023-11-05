@@ -60,6 +60,13 @@ namespace terminal {
 
     void putchar(char ch) {
         switch (ch) {
+            case '\b':
+                if (column > 0) {
+                    column--;
+                    buffer_entry(column, row) = vga_entry(' ', color);
+                }
+                break;
+
             case '\n':
                 next_line();
                 column = 0;
