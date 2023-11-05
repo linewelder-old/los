@@ -38,15 +38,29 @@ namespace terminal {
     }
 
     void putchar(char ch) {
-        const size_t index = row * WIDTH + column;
-        BUFFER[index] = vga_entry(ch, color);
+        switch (ch) {
+            case '\n':
+                row++;
+                if (row == HEIGHT) {
+                    row = 0;
+                }
+                column = 0;
+                break;
 
-        column++;
-        if (column == WIDTH) {
-            column = 0;
-            row++;
-            if (row == HEIGHT) {
-                row = 0;
+            default: {
+                const size_t index = row * WIDTH + column;
+                BUFFER[index] = vga_entry(ch, color);
+
+                column++;
+                if (column == WIDTH) {
+                    column = 0;
+                    row++;
+                    if (row == HEIGHT) {
+                        row = 0;
+                    }
+                }
+
+                break;
             }
         }
     }
