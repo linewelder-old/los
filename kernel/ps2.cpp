@@ -10,6 +10,16 @@ namespace ps2 {
     static constexpr uint16_t CONTROL_PORT = 0x64;
     static constexpr uint16_t DATA_PORT = 0x60;
 
+    void init() {
+        disable_translation();
+
+        first.disable_scanning();
+        second.disable_scanning();
+
+        first.identify();
+        second.identify();
+    }
+
     void Device::send(uint8_t data) {
         if (this->id == 1) {
             outb(CONTROL_PORT, 0xd4);

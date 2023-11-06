@@ -8,7 +8,7 @@ extern "C" void kmain() {
     terminal::clear();
     terminal::write_cstr("Los\n");
 
-    ps2::disable_translation();
+    ps2::init();
     ps2::first.enable_scanning();
 
     for (;;) {

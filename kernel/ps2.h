@@ -23,6 +23,8 @@ namespace ps2 {
     extern class Device first;
     extern class Device second;
 
+    void init();
+
     bool try_poll(uint8_t& output, int max_cycles = 20);
 
     uint8_t poll();
