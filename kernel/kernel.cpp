@@ -9,7 +9,7 @@ extern "C" void kmain() {
     terminal::write_cstr("Los\n");
 
     ps2::disable_translation();
-    ps2::enable_scanning();
+    ps2::first.enable_scanning();
 
     for (;;) {
         terminal::putchar(keyboard::poll_char());

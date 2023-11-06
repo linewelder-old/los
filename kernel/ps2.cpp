@@ -4,12 +4,28 @@
 #include "asm.h"
 
 namespace ps2 {
+    Device first(0);
+    Device second(1);
+
     static constexpr uint16_t CONTROL_PORT = 0x64;
     static constexpr uint16_t DATA_PORT = 0x60;
 
-    void send(uint8_t data) {
+    void Device::send(uint8_t data) {
+        if (this->id == 1) {
+            outb(CONTROL_PORT, 0xd4);
+        }
         while (inb(CONTROL_PORT) & 2);
         outb(DATA_PORT, data);
+    }
+
+    void Device::disable_scanning() {
+        send(0xf5);
+        while (poll() != 0xfa);
+    }
+
+    void Device::enable_scanning() {
+        send(0xf4);
+        while (poll() != 0xfa);
     }
 
     uint8_t poll() {
@@ -29,15 +45,5 @@ namespace ps2 {
 
     void disable_translation() {
         write_config_byte(read_config_byte() ^ 64);
-    }
-
-    void disable_scanning() {
-        send(0xf5);
-        while (poll() != 0xfa);
-    }
-
-    void enable_scanning() {
-        send(0xf4);
-        while (poll() != 0xfa);
     }
 }
