@@ -10,6 +10,12 @@ extern "C" void kmain() {
     terminal::write_cstr("Los\n");
 
     ps2::init();
+    printf("Connected PS/2 devices:\n");
+    printf("0: %s (%x)\n",
+        ps2::first.get_type_name(), ps2::first.get_type());
+    printf("1: %s (%x)\n",
+        ps2::second.get_type_name(), ps2::second.get_type());
+
     if (ps2::first.get_type() == 0xab83) {
         ps2::first.enable_scanning();
     } else if (ps2::second.get_type() == 0xab83) {
