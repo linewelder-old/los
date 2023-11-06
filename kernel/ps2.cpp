@@ -28,6 +28,61 @@ namespace ps2 {
         while (poll() != 0xfa);
     }
 
+    void Device::identify() {
+        send(0xf2);
+        while (poll() != 0xfa);
+
+        uint16_t response = 0;
+        for (int i = 0; i < 2; i++) {
+            uint8_t buf;
+            if (try_poll(buf)) {
+                response = response << 8 | buf;
+            } else if (i == 0) {
+                response = 0xffff;
+            } else {
+                break;
+            }
+        }
+
+        type = response;
+    }
+
+    uint16_t Device::get_type() {
+        return type;
+    }
+
+    const char* Device::get_type_name() {
+        switch (type) {
+            case 0x00: return "Standard PS/2 mouse";
+            case 0x03: return "Mouse with scroll wheel";
+            case 0x04: return "5-button mouse";
+            case 0xab83:
+            case 0xabc1: return "MF2 keyboard";
+            case 0xab41: return "MF2 keyboard (translated)";
+            case 0xab84: return "\"Short\" keyboard";
+            case 0xab54: return "\"Short\" keyboard (translated)";
+            case 0xab85: return "NCD N-97 keyboard";
+            case 0xab86: return "122-key keyboard";
+            case 0xab90: return "Japanese \"G\" keyboard";
+            case 0xab91: return "Japanese \"P\" keyboard";
+            case 0xab92: return "Japanese \"A\" keyboard";
+            case 0xaba1: return "NCD Sun layout keyboard";
+            case 0xffff: return "Ancient AT keyboard";
+            default: return "Unknown";
+        }
+    }
+
+    bool try_poll(uint8_t& output, int max_cycles) {
+        int cycles = 0;
+        while (!(inb(CONTROL_PORT) & 1) && cycles < max_cycles) {
+            cycles++;
+            if (cycles == max_cycles) return false;
+        }
+
+        output = inb(DATA_PORT);
+        return true;
+    }
+
     uint8_t poll() {
         while (!(inb(CONTROL_PORT) & 1));
         return (uint8_t)inb(DATA_PORT);
