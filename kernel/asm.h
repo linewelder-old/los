@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 inline void outl(uint16_t address, uint32_t data) {
     asm volatile("outl %1, %0"
         :
