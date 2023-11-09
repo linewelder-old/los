@@ -3,20 +3,24 @@
 namespace idt {
     static EncodedIdtEntry idt[256];
 
-    void register_interrupt(int vector, Handler handler) {
+    static void register_gate(int vector, void* handler, uint8_t attribute_type) {
         idt[vector].offset_1 = static_cast<uint16_t>((uint32_t)handler & 0xffff);
         idt[vector].offset_2 = static_cast<uint16_t>((uint32_t)handler >> 16);
         idt[vector].segment = 0x08;
         idt[vector].zero = 0;
-        idt[vector].attributes = ATTR_VALID | ATTR_RING(3) | ATTR_32_BIT_INTERRUPT;
+        idt[vector].attributes = ATTR_VALID | ATTR_RING(3) | attribute_type;
+    }
+
+    void register_interrupt(int vector, Handler handler) {
+        register_gate(vector, reinterpret_cast<void*>(handler), ATTR_32_BIT_INTERRUPT);
     }
 
     void register_trap(int vector, Handler handler) {
-        idt[vector].offset_1 = static_cast<uint16_t>((uint32_t)handler & 0xffff);
-        idt[vector].offset_2 = static_cast<uint16_t>((uint32_t)handler >> 16);
-        idt[vector].segment = 0x08;
-        idt[vector].zero = 0;
-        idt[vector].attributes = ATTR_VALID | ATTR_RING(3) | ATTR_32_BIT_TRAP;
+        register_gate(vector, reinterpret_cast<void*>(handler), ATTR_32_BIT_TRAP);
+    }
+
+    void register_trap(int vector, ErrorCodeHandler handler) {
+        register_gate(vector, reinterpret_cast<void*>(handler), ATTR_32_BIT_TRAP);
     }
 
     struct __attribute__((packed)) {

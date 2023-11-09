@@ -26,9 +26,11 @@ namespace idt {
 
     struct InterruptFrame;
     typedef void (*Handler)(InterruptFrame*);
+    typedef void (*ErrorCodeHandler)(InterruptFrame*, int);
 
     void register_interrupt(int vector, Handler handler);
     void register_trap(int vector, Handler handler);
+    void register_trap(int vector, ErrorCodeHandler handler);
 
     void init();
 };
