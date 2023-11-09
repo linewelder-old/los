@@ -30,6 +30,6 @@ inline uint8_t inb(uint16_t address) {
     return result;
 }
 
-inline void cli() {
+inline void disable_interrupts() {
     asm volatile("cli");
 }

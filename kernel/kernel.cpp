@@ -9,7 +9,7 @@
 #include "printf.h"
 
 extern "C" void kmain() {
-    cli();
+    disable_interrupts();
     gdt::init();
 
     idt::init();
