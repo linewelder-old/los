@@ -33,3 +33,7 @@ inline uint8_t inb(uint16_t address) {
 inline void disable_interrupts() {
     asm volatile("cli");
 }
+
+inline void enable_interrupts() {
+    asm volatile("sti");
+}
