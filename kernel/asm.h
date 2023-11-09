@@ -29,3 +29,7 @@ inline uint8_t inb(uint16_t address) {
         : "d" (address));
     return result;
 }
+
+inline void cli() {
+    asm volatile("cli");
+}

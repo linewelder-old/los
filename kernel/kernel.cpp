@@ -1,11 +1,16 @@
 #include <stdint.h>
 
+#include "asm.h"
+#include "gdt.h"
 #include "ps2.h"
 #include "keyboard.h"
 #include "terminal.h"
 #include "printf.h"
 
 extern "C" void kmain() {
+    cli();
+    gdt::init();
+
     terminal::clear();
     terminal::write_cstr("Los\n");
 
