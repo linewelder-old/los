@@ -3,6 +3,7 @@
 #include "asm.h"
 #include "gdt.h"
 #include "idt.h"
+#include "exceptions.h"
 #include "pic.h"
 #include "ps2.h"
 #include "keyboard.h"
@@ -14,6 +15,7 @@ extern "C" void kmain() {
     gdt::init();
 
     idt::init();
+    register_exception_handlers();
     pic::init(0x20, 0x28);
 
     terminal::clear();
