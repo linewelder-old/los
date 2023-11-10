@@ -20,10 +20,12 @@ namespace ps2 {
         uint16_t type; /** 0xffff if the device returns an empty response. */
     };
 
-    extern class Device first;
-    extern class Device second;
-
     void init();
+
+    const Device& get_device(int id);
+
+    /// 1 or 2.
+    int get_device_count();
 
     bool try_poll(uint8_t& output, int max_cycles = 20);
 

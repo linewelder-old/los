@@ -4,8 +4,7 @@
 #include "asm.h"
 
 namespace ps2 {
-    Device first(0);
-    Device second(1);
+    static Device devices[] = { Device(0), Device(1) };
 
     static constexpr uint16_t CONTROL_PORT = 0x64;
     static constexpr uint16_t DATA_PORT = 0x60;
@@ -13,11 +12,21 @@ namespace ps2 {
     void init() {
         disable_translation();
 
-        first.disable_scanning();
-        second.disable_scanning();
+        for (int i = 0; i < get_device_count(); i++) {
+            devices[i].disable_scanning();
+        }
 
-        first.identify();
-        second.identify();
+        for (int i = 0; i < get_device_count(); i++) {
+            devices[i].identify();
+        }
+    }
+
+    const Device& get_device(int id) {
+        return devices[id];
+    }
+
+    int get_device_count() {
+        return 2; // For now we assume both devices are available.
     }
 
     void Device::send(uint8_t data) const {

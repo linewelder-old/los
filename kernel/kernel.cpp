@@ -23,20 +23,20 @@ extern "C" void kmain() {
 
     ps2::init();
     printf("Connected PS/2 devices:\n");
-    printf("0: %s (%x)\n",
-        ps2::first.get_type_name(), ps2::first.get_type());
-    printf("1: %s (%x)\n",
-        ps2::second.get_type_name(), ps2::second.get_type());
-
-    if (ps2::first.get_type() == 0xab83) {
-        ps2::first.enable_scanning();
-    } else if (ps2::second.get_type() == 0xab83) {
-        ps2::second.enable_scanning();
-    } else {
-        kpanic("No keyboard");
+    for (int i = 0; i < ps2::get_device_count(); i++) {
+        const ps2::Device& device = ps2::get_device(i);
+        printf("%d: %s (%x)\n",
+            i, device.get_type_name(), device.get_type());
     }
 
-    for (;;) {
-        terminal::putchar(keyboard::poll_char());
+    bool keyboard_found = false;
+    for (int i = 0; i < ps2::get_device_count(); i++) {
+        const ps2::Device& device = ps2::get_device(i);
+        if (device.get_type() == 0xab83) {
+            device.enable_scanning();
+            keyboard_found = true;
+        }
     }
+    if (!keyboard_found) kpanic("No keyboard");
+
 }
