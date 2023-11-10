@@ -31,6 +31,8 @@ extern "C" void kmain() {
 
         if (device.get_type() == 0xab83) {
             device.enable_scanning();
+            idt::register_interrupt(i == 0 ? 
+                0x21 : 0x2c, keyboard::irq_handler);
             keyboard_found = true;
             terminal::write_cstr(" [Primary keyboard]");
         }
@@ -41,7 +43,6 @@ extern "C" void kmain() {
 
     terminal::putchar('\n');
 
-    idt::register_interrupt(0x21, keyboard::irq_handler);
     keyboard::set_callback([](char ch) {
         terminal::putchar(ch);
     });
