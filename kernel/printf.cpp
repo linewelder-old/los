@@ -38,10 +38,7 @@ static int print_number(int value, int base, int max_length) {
 }
 
 /** Supports only %d %x %c %s formatters without precision and width. */
-int printf(const char* format, ...) {
-    va_list params;
-    va_start(params, format);
-
+int vprintf(const char* format, va_list args) {
     int written = 0;
     while (*format != '\0') {
         size_t remained = INT_MAX - written;
@@ -49,7 +46,7 @@ int printf(const char* format, ...) {
         if (format[0] == '%') {
             switch (format[1]) {
                 case 'd': {
-                    int i = va_arg(params, int);
+                    int i = va_arg(args, int);
                     int result = print_number(i, 10, remained);
                     if (result < 0) {
                         return -1;
@@ -58,7 +55,7 @@ int printf(const char* format, ...) {
                 }
 
                 case 'x': {
-                    int i = va_arg(params, int);
+                    int i = va_arg(args, int);
                     int result = print_number(i, 16, remained);
                     if (result < 0) {
                         return -1;
@@ -67,7 +64,7 @@ int printf(const char* format, ...) {
                 }
 
                 case 'c': {
-                    char ch = (char)va_arg(params, int); // char promotes to int.
+                    char ch = (char)va_arg(args, int); // char promotes to int.
                     if (remained == 0) return -1;
                     terminal::putchar(ch);
                     written++;
@@ -75,7 +72,7 @@ int printf(const char* format, ...) {
                 }
 
                 case 's': {
-                    const char* str = va_arg(params, const char*);
+                    const char* str = va_arg(args, const char*);
                     while (str[0]) {
                         if (remained == 0) return -1;
                         terminal::putchar(str[0]);
@@ -108,6 +105,16 @@ int printf(const char* format, ...) {
         }
     }
 
-    va_end(params);
+    return written;
+}
+
+/** Supports only %d %x %c %s formatters without precision and width. */
+int printf(const char* format, ...) {
+    va_list args;
+    va_start(args, format);
+
+    int written = vprintf(format, args);
+
+    va_end(args);
     return written;
 }
