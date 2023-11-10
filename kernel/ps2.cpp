@@ -20,7 +20,7 @@ namespace ps2 {
         second.identify();
     }
 
-    void Device::send(uint8_t data) {
+    void Device::send(uint8_t data) const {
         if (this->id == 1) {
             outb(CONTROL_PORT, 0xd4);
         }
@@ -28,12 +28,12 @@ namespace ps2 {
         outb(DATA_PORT, data);
     }
 
-    void Device::disable_scanning() {
+    void Device::disable_scanning() const {
         send(0xf5);
         while (poll() != 0xfa);
     }
 
-    void Device::enable_scanning() {
+    void Device::enable_scanning() const {
         send(0xf4);
         while (poll() != 0xfa);
     }
@@ -57,11 +57,11 @@ namespace ps2 {
         type = response;
     }
 
-    uint16_t Device::get_type() {
+    uint16_t Device::get_type() const {
         return type;
     }
 
-    const char* Device::get_type_name() {
+    const char* Device::get_type_name() const {
         switch (type) {
             case 0x00: return "Standard PS/2 mouse";
             case 0x03: return "Mouse with scroll wheel";

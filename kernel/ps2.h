@@ -7,12 +7,12 @@ namespace ps2 {
     public:
         constexpr Device(uint16_t id) : id(id), type(0xffff) {}
 
-        void send(uint8_t data);
-        void disable_scanning();
-        void enable_scanning();
+        void send(uint8_t data) const;
+        void disable_scanning() const;
+        void enable_scanning() const;
 
-        uint16_t get_type();
-        const char* get_type_name();
+        uint16_t get_type() const;
+        const char* get_type_name() const;
         void identify();
 
     private:
