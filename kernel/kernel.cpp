@@ -33,8 +33,7 @@ extern "C" void kmain() {
     } else if (ps2::second.get_type() == 0xab83) {
         ps2::second.enable_scanning();
     } else {
-        printf("No keyboard.\n");
-        for (;;);
+        kpanic("No keyboard");
     }
 
     for (;;) {
