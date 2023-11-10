@@ -22,22 +22,24 @@ extern "C" void kmain() {
     terminal::write_cstr("Los\n");
 
     ps2::init();
-    printf("Connected PS/2 devices:\n");
-    for (int i = 0; i < ps2::get_device_count(); i++) {
-        const ps2::Device& device = ps2::get_device(i);
-        printf("%d: %s (%x)\n",
-            i, device.get_type_name(), device.get_type());
-    }
-
     bool keyboard_found = false;
+    terminal::write_cstr("Connected PS/2 devices:\n");
     for (int i = 0; i < ps2::get_device_count(); i++) {
         const ps2::Device& device = ps2::get_device(i);
+        printf("%d: %s (type: %x)",
+            i, device.get_type_name(), device.get_type());
+
         if (device.get_type() == 0xab83) {
             device.enable_scanning();
             keyboard_found = true;
+            terminal::write_cstr(" [Primary keyboard]");
         }
+
+        terminal::putchar('\n');
     }
     if (!keyboard_found) kpanic("No keyboard");
+
+    terminal::putchar('\n');
 
     idt::register_interrupt(0x21, keyboard::irq_handler);
     keyboard::set_callback([](char ch) {
