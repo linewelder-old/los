@@ -39,4 +39,13 @@ extern "C" void kmain() {
     }
     if (!keyboard_found) kpanic("No keyboard");
 
+    idt::register_interrupt(0x21, keyboard::irq_handler);
+    keyboard::set_callback([](char ch) {
+        terminal::putchar(ch);
+    });
+    pic::clear_mask(1);
+    enable_interrupts();
+    for (;;) {
+        asm volatile("hlt");
+    }
 }

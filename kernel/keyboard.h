@@ -1,5 +1,11 @@
 #pragma once
 
+#include "idt.h"
+
 namespace keyboard {
-    char poll_char();
+    typedef void (*KeypressCallback)(char key);
+
+    void set_callback(KeypressCallback func);
+
+    void irq_handler(idt::InterruptFrame*);
 }

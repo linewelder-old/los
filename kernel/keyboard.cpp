@@ -1,6 +1,8 @@
 #include "keyboard.h"
 
+#include "asm.h"
 #include "ps2.h"
+#include "pic.h"
 
 namespace keyboard {
     static constexpr char SCAN_CODE_CHARACTERS[256] = {
@@ -62,32 +64,43 @@ namespace keyboard {
     };
 
     static bool shift_pressed = false;
+    static uint8_t last_received = 0;
+    static KeypressCallback callback = 0;
 
-    char poll_char() {
-        for (;;) {
-            uint8_t received = ps2::poll();
+    void set_callback(KeypressCallback func) {
+        callback = func;
+    }
+
+    __attribute__((interrupt))
+    void irq_handler(idt::InterruptFrame*) {
+        uint8_t received = ps2::read_input();
+
+        if (last_received == 0xf0) {
+            if (received == 0x12 || received == 0x59) {
+                shift_pressed = false;
+            }
+            last_received = 0;
+        } else {
             switch (received) {
                 case 0x12: // Left shift
                 case 0x59: // Right shift
                     shift_pressed = true;
                     break;
 
-                case 0xf0: {
-                    uint8_t second = ps2::poll(); // Skip key releases.
-                    if (second == 0x12 || second == 0x59) {
-                        shift_pressed = false;
-                    }
+                case 0xf0: // Two byte scancode.
                     break;
-                }
 
                 default: {
                     char ch = shift_pressed
                         ? SCAN_CODE_CHARACTERS_SHIFT[received]
                         : SCAN_CODE_CHARACTERS[received];
-                    if (ch) return ch;
+                    if (ch && callback) callback(ch);
                     break;
                 }
             }
+            last_received = received;
         }
+
+        pic::send_eoi(1);
     }
 }

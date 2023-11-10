@@ -107,6 +107,10 @@ namespace ps2 {
         return (uint8_t)inb(DATA_PORT);
     }
 
+    uint8_t read_input() {
+        return inb(DATA_PORT);
+    }
+
     uint8_t read_config_byte() {
         outb(CONTROL_PORT, 0x20);
         return inb(DATA_PORT);

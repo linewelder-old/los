@@ -31,6 +31,8 @@ namespace ps2 {
 
     uint8_t poll();
 
+    uint8_t read_input();
+
     uint8_t read_config_byte();
 
     void write_config_byte(uint8_t value);
