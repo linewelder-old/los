@@ -3,6 +3,7 @@
 #include "asm.h"
 #include "gdt.h"
 #include "idt.h"
+#include "pic.h"
 #include "ps2.h"
 #include "keyboard.h"
 #include "terminal.h"
@@ -13,6 +14,7 @@ extern "C" void kmain() {
     gdt::init();
 
     idt::init();
+    pic::init(0x20, 0x28);
 
     terminal::clear();
     terminal::write_cstr("Los\n");
