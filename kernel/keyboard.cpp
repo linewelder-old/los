@@ -125,7 +125,7 @@ namespace keyboard {
 
     static bool received_e0 = false;
     static bool releasing = false;
-    static bool shift_pressed = false;
+    static uint8_t modifiers = 0;
 
     __attribute__((interrupt))
     void irq_handler(idt::InterruptFrame*) {
@@ -142,19 +142,60 @@ namespace keyboard {
             default: {
                 uint16_t scancode = received;
                 if (received_e0) scancode |= 0xe000;
+                Key key = static_cast<Key>(scancode);
 
-                if (scancode == 0x12 || scancode == 0x59) {
-                    shift_pressed = !releasing;
+                if (releasing) {
+                    switch (key) {
+                    case Key::LEFT_SHIFT:
+                    case Key::RIGHT_SHIFT:
+                        modifiers &= ~MODIFIER_SHIFT;
+                        break;
+                    case Key::LEFT_ALT:
+                    case Key::RIGHT_ALT:
+                        modifiers &= ~MODIFIER_ALT;
+                        break;
+                    case Key::LEFT_CTRL:
+                    case Key::RIGHT_CTRL:
+                        modifiers &= ~MODIFIER_CTRL;
+                        break;
+                    case Key::LEFT_SUPER:
+                    case Key::RIGHT_SUPER:
+                        modifiers &= ~MODIFIER_SUPER;
+                        break;
+                    default: break;
+                    }
+                } else {
+                    switch (key) {
+                    case Key::LEFT_SHIFT:
+                    case Key::RIGHT_SHIFT:
+                        modifiers |= MODIFIER_SHIFT;
+                        break;
+                    case Key::LEFT_ALT:
+                    case Key::RIGHT_ALT:
+                        modifiers |= MODIFIER_ALT;
+                        break;
+                    case Key::LEFT_CTRL:
+                    case Key::RIGHT_CTRL:
+                        modifiers |= MODIFIER_CTRL;
+                        break;
+                    case Key::LEFT_SUPER:
+                    case Key::RIGHT_SUPER:
+                        modifiers |= MODIFIER_SUPER;
+                        break;
+                    default: break;
+                    }
                 }
 
                 if (callback) {
-                    char character = shift_pressed
+                    char character = modifiers & MODIFIER_SHIFT
                         ? get_key_character_shifted(scancode)
                         : get_key_character(scancode);
+
                     callback({
-                        static_cast<Key>(scancode),
+                        key,
                         releasing,
                         character,
+                        modifiers,
                     });
                 }
 
