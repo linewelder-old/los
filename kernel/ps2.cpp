@@ -109,6 +109,6 @@ namespace ps2 {
     }
 
     void disable_translation() {
-        write_config_byte(read_config_byte() ^ 64);
+        write_config_byte(read_config_byte() & ~64);
     }
 }
