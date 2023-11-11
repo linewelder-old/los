@@ -141,9 +141,9 @@ namespace keyboard {
         uint8_t modifiers;
     };
 
-    typedef void (*KeypressCallback)(KeyEventArgs args);
+    typedef void (*KeyEventCallback)(KeyEventArgs args);
 
-    void set_callback(KeypressCallback func);
+    void set_callback(KeyEventCallback func);
 
     void irq_handler(idt::InterruptFrame*);
 

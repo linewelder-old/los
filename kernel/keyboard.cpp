@@ -117,9 +117,9 @@ namespace keyboard {
         }
     }
 
-    static KeypressCallback callback = 0;
+    static KeyEventCallback callback = 0;
 
-    void set_callback(KeypressCallback func) {
+    void set_callback(KeyEventCallback func) {
         callback = func;
     }
 
