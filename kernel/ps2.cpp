@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include "asm.h"
+#include "exceptions.h"
 
 namespace ps2 {
     static Device devices[] = { Device(0), Device(1) };
@@ -37,19 +38,32 @@ namespace ps2 {
         outb(DATA_PORT, data);
     }
 
+    static void expect_ack(const char* what, int device_id) {
+        uint8_t response = 0;
+        if (!try_poll(response)) {
+            kpanic("%s (PS/2 device %d) failed, didn't receive device response",
+                what, device_id);
+        }
+
+        if (response != 0xfa) {
+            kpanic("%s (PS/2 device %d) failed, received %x instead of 0xfa (acknowledge)",
+                what, device_id, response);
+        }
+    }
+
     void Device::disable_scanning() const {
         send(0xf5);
-        while (poll() != 0xfa);
+        expect_ack("Disable scanning", id);
     }
 
     void Device::enable_scanning() const {
         send(0xf4);
-        while (poll() != 0xfa);
+        expect_ack("Enable scanning", id);
     }
 
     void Device::identify() {
         send(0xf2);
-        while (poll() != 0xfa);
+        expect_ack("Identify", id);
 
         uint16_t response = 0;
         for (int i = 0; i < 2; i++) {
@@ -100,11 +114,6 @@ namespace ps2 {
 
         output = inb(DATA_PORT);
         return true;
-    }
-
-    uint8_t poll() {
-        while (!(inb(CONTROL_PORT) & 1));
-        return (uint8_t)inb(DATA_PORT);
     }
 
     uint8_t read_input() {

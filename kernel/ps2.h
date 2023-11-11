@@ -29,8 +29,6 @@ namespace ps2 {
 
     bool try_poll(uint8_t& output, int max_cycles = 20);
 
-    uint8_t poll();
-
     uint8_t read_input();
 
     uint8_t read_config_byte();
