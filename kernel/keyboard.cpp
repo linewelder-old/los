@@ -5,100 +5,163 @@
 #include "pic.h"
 
 namespace keyboard {
-    static constexpr char SCAN_CODE_CHARACTERS[256] = {
-        /* 00 */ '\0', /* 01 */ '\0', /* 02 */ '\0', /* 03 */ '\0',
-        /* 04 */ '\0', /* 05 */ '\0', /* 06 */ '\0', /* 07 */ '\0',
-        /* 08 */ '\0', /* 09 */ '\0', /* 0a */ '\0', /* 0b */ '\0',
-        /* 0c */ '\0', /* 0d */ '\0', /* 0e */ '`',  /* 0f */ '\0',
-        /* 10 */ '\0', /* 11 */ '\0', /* 12 */ '\0', /* 13 */ '\0',
-        /* 14 */ '\0', /* 15 */ 'q',  /* 16 */ '1',  /* 17 */ '\0',
-        /* 18 */ '\0', /* 19 */ '\0', /* 1a */ 'z',  /* 1b */ 's',
-        /* 1c */ 'a',  /* 1d */ 'w',  /* 1e */ '2',  /* 1f */ '\0',
-        /* 20 */ '\0', /* 21 */ 'c',  /* 22 */ 'x',  /* 23 */ 'd',
-        /* 24 */ 'e',  /* 25 */ '4',  /* 26 */ '3',  /* 27 */ '\0',
-        /* 28 */ '\0', /* 29 */ ' ',  /* 2a */ 'v',  /* 2b */ 'f',
-        /* 2c */ 't',  /* 2d */ 'r',  /* 2e */ '5',  /* 2f */ '\0',
-        /* 30 */ '\0', /* 31 */ 'n',  /* 32 */ 'b',  /* 33 */ 'h',
-        /* 34 */ 'g',  /* 35 */ 'y',  /* 36 */ '6',  /* 37 */ '\0',
-        /* 38 */ '\0', /* 39 */ '\0', /* 3a */ 'm',  /* 3b */ 'j',
-        /* 3c */ 'u',  /* 3d */ '7',  /* 3e */ '8',  /* 3f */ '\0',
-        /* 40 */ '\0', /* 41 */ ',',  /* 42 */ 'k',  /* 43 */ 'i',
-        /* 44 */ 'o',  /* 45 */ '0',  /* 46 */ '9',  /* 47 */ '\0',
-        /* 48 */ '\0', /* 49 */ '.',  /* 4a */ '/',  /* 4b */ 'l',
-        /* 4c */ ';',  /* 4d */ 'p',  /* 4e */ '-',  /* 4f */ '\0',
-        /* 50 */ '\0', /* 51 */ '\0', /* 52 */ '\'', /* 53 */ '\0',
-        /* 54 */ '[',  /* 55 */ '=',  /* 56 */ '\0', /* 57 */ '\0',
-        /* 58 */ '\0', /* 59 */ '\0', /* 5a */ '\n', /* 5b */ ']',
-        /* 5c */ '\0', /* 5d */ '\\', /* 5e */ '\0', /* 5f */ '\0',
-        /* 60 */ '\0', /* 61 */ '\0', /* 62 */ '\0', /* 63 */ '\0',
-        /* 64 */ '\0', /* 65 */ '\0', /* 66 */ '\b', /* 67 */ '\0',
-    };
+    static constexpr char get_key_character(uint16_t scancode) {
+        switch (scancode) {
+            case 0x0e: return '`';
+            case 0x15: return 'q';
+            case 0x16: return '1';
+            case 0x1a: return 'z';
+            case 0x1b: return 's';
+            case 0x1c: return 'a';
+            case 0x1d: return 'w';
+            case 0x1e: return '2';
+            case 0x21: return 'c';
+            case 0x22: return 'x';
+            case 0x23: return 'd';
+            case 0x24: return 'e';
+            case 0x25: return '4';
+            case 0x26: return '3';
+            case 0x29: return ' ';
+            case 0x2a: return 'v';
+            case 0x2b: return 'f';
+            case 0x2c: return 't';
+            case 0x2d: return 'r';
+            case 0x2e: return '5';
+            case 0x31: return 'n';
+            case 0x32: return 'b';
+            case 0x33: return 'h';
+            case 0x34: return 'g';
+            case 0x35: return 'y';
+            case 0x36: return '6';
+            case 0x3a: return 'm';
+            case 0x3b: return 'j';
+            case 0x3c: return 'u';
+            case 0x3d: return '7';
+            case 0x3e: return '8';
+            case 0x41: return ',';
+            case 0x42: return 'k';
+            case 0x43: return 'i';
+            case 0x44: return 'o';
+            case 0x45: return '0';
+            case 0x46: return '9';
+            case 0x49: return '.';
+            case 0x4a: return '/';
+            case 0x4b: return 'l';
+            case 0x4c: return ';';
+            case 0x4d: return 'p';
+            case 0x4e: return '-';
+            case 0x52: return '\'';
+            case 0x54: return '[';
+            case 0x55: return '=';
+            case 0x5a: return '\n';
+            case 0x5b: return ']';
+            case 0x5d: return '\\';
+            case 0x66: return '\b';
+            default:   return '\0';
+        }
+    }
 
-    static constexpr char SCAN_CODE_CHARACTERS_SHIFT[256] = {
-        /* 00 */ '\0', /* 01 */ '\0', /* 02 */ '\0', /* 03 */ '\0',
-        /* 04 */ '\0', /* 05 */ '\0', /* 06 */ '\0', /* 07 */ '\0',
-        /* 08 */ '\0', /* 09 */ '\0', /* 0a */ '\0', /* 0b */ '\0',
-        /* 0c */ '\0', /* 0d */ '\0', /* 0e */ '~',  /* 0f */ '\0',
-        /* 10 */ '\0', /* 11 */ '\0', /* 12 */ '\0', /* 13 */ '\0',
-        /* 14 */ '\0', /* 15 */ 'Q',  /* 16 */ '!',  /* 17 */ '\0',
-        /* 18 */ '\0', /* 19 */ '\0', /* 1a */ 'Z',  /* 1b */ 'S',
-        /* 1c */ 'A',  /* 1d */ 'W',  /* 1e */ '@',  /* 1f */ '\0',
-        /* 20 */ '\0', /* 21 */ 'C',  /* 22 */ 'X',  /* 23 */ 'D',
-        /* 24 */ 'E',  /* 25 */ '$',  /* 26 */ '#',  /* 27 */ '\0',
-        /* 28 */ '\0', /* 29 */ ' ',  /* 2a */ 'V',  /* 2b */ 'F',
-        /* 2c */ 'T',  /* 2d */ 'R',  /* 2e */ '%',  /* 2f */ '\0',
-        /* 30 */ '\0', /* 31 */ 'N',  /* 32 */ 'B',  /* 33 */ 'H',
-        /* 34 */ 'G',  /* 35 */ 'Y',  /* 36 */ '^',  /* 37 */ '\0',
-        /* 38 */ '\0', /* 39 */ '\0', /* 3a */ 'M',  /* 3b */ 'J',
-        /* 3c */ 'U',  /* 3d */ '&',  /* 3e */ '*',  /* 3f */ '\0',
-        /* 40 */ '\0', /* 41 */ '<',  /* 42 */ 'K',  /* 43 */ 'I',
-        /* 44 */ 'O',  /* 45 */ ')',  /* 46 */ '(',  /* 47 */ '\0',
-        /* 48 */ '\0', /* 49 */ '>',  /* 4a */ '?',  /* 4b */ 'L',
-        /* 4c */ ':',  /* 4d */ 'P',  /* 4e */ '_',  /* 4f */ '\0',
-        /* 50 */ '\0', /* 51 */ '\0', /* 52 */ '"',  /* 53 */ '\0',
-        /* 54 */ '{',  /* 55 */ '+',  /* 56 */ '\0', /* 57 */ '\0',
-        /* 58 */ '\0', /* 59 */ '\0', /* 5a */ '\n', /* 5b */ '}',
-        /* 5c */ '\0', /* 5d */ '|',  /* 5e */ '\0', /* 5f */ '\0',
-        /* 60 */ '\0', /* 61 */ '\0', /* 62 */ '\0', /* 63 */ '\0',
-        /* 64 */ '\0', /* 65 */ '\0', /* 66 */ '\b', /* 67 */ '\0',
-    };
+    static constexpr char get_key_character_shifted(uint16_t scancode) {
+        switch (scancode) {
+            case 0x0e: return '~';
+            case 0x15: return 'Q';
+            case 0x16: return '!';
+            case 0x1a: return 'Z';
+            case 0x1b: return 'S';
+            case 0x1c: return 'A';
+            case 0x1d: return 'W';
+            case 0x1e: return '@';
+            case 0x21: return 'C';
+            case 0x22: return 'X';
+            case 0x23: return 'D';
+            case 0x24: return 'E';
+            case 0x25: return '$';
+            case 0x26: return '#';
+            case 0x29: return ' ';
+            case 0x2a: return 'V';
+            case 0x2b: return 'F';
+            case 0x2c: return 'T';
+            case 0x2d: return 'R';
+            case 0x2e: return '%';
+            case 0x31: return 'N';
+            case 0x32: return 'B';
+            case 0x33: return 'H';
+            case 0x34: return 'G';
+            case 0x35: return 'Y';
+            case 0x36: return '^';
+            case 0x3a: return 'M';
+            case 0x3b: return 'J';
+            case 0x3c: return 'U';
+            case 0x3d: return '&';
+            case 0x3e: return '*';
+            case 0x41: return '<';
+            case 0x42: return 'K';
+            case 0x43: return 'I';
+            case 0x44: return 'O';
+            case 0x45: return ')';
+            case 0x46: return '(';
+            case 0x49: return '>';
+            case 0x4a: return '?';
+            case 0x4b: return 'L';
+            case 0x4c: return ':';
+            case 0x4d: return 'P';
+            case 0x4e: return '_';
+            case 0x52: return '"';
+            case 0x54: return '{';
+            case 0x55: return '+';
+            case 0x5a: return '\n';
+            case 0x5b: return '}';
+            case 0x5d: return '|';
+            case 0x66: return '\b';
+            default:   return '\0';
+        }
+    }
 
-    static bool shift_pressed = false;
-    static uint8_t last_received = 0;
     static KeypressCallback callback = 0;
 
     void set_callback(KeypressCallback func) {
         callback = func;
     }
 
+    static bool received_e0 = false;
+    static bool releasing = false;
+    static bool shift_pressed = false;
+
     __attribute__((interrupt))
     void irq_handler(idt::InterruptFrame*) {
         uint8_t received = ps2::read_input();
+        switch (received) {
+            case 0xe0:
+                received_e0 = true;
+                break;
 
-        if (last_received == 0xf0) {
-            if (received == 0x12 || received == 0x59) {
-                shift_pressed = false;
-            }
-            last_received = 0;
-        } else {
-            switch (received) {
-                case 0x12: // Left shift
-                case 0x59: // Right shift
-                    shift_pressed = true;
-                    break;
+            case 0xf0:
+                releasing = true;
+                break;
 
-                case 0xf0: // Two byte scancode.
-                    break;
+            default: {
+                uint16_t scancode = received;
+                if (received_e0) scancode |= 0xe000;
 
-                default: {
-                    char ch = shift_pressed
-                        ? SCAN_CODE_CHARACTERS_SHIFT[received]
-                        : SCAN_CODE_CHARACTERS[received];
-                    if (ch && callback) callback(ch);
-                    break;
+                if (scancode == 0x12 || scancode == 0x59) {
+                    shift_pressed = !releasing;
                 }
+
+                if (callback) {
+                    char character = shift_pressed
+                        ? get_key_character_shifted(scancode)
+                        : get_key_character(scancode);
+                    callback({
+                        static_cast<Key>(scancode),
+                        releasing,
+                        character,
+                    });
+                }
+
+                releasing = false;
+                received_e0 = false;
+                break;
             }
-            last_received = received;
         }
 
         pic::send_eoi(1);

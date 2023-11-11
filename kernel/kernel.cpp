@@ -43,8 +43,10 @@ extern "C" void kmain() {
 
     terminal::putchar('\n');
 
-    keyboard::set_callback([](char ch) {
-        terminal::putchar(ch);
+    keyboard::set_callback([](keyboard::KeyEventArgs args) {
+        if (!args.released && args.character) {
+            terminal::putchar(args.character);
+        }
     });
     pic::clear_mask(1);
     enable_interrupts();
