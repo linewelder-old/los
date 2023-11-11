@@ -11,7 +11,6 @@
 #include "printf.h"
 
 extern "C" void kmain() {
-    disable_interrupts();
     gdt::init();
 
     idt::init();
