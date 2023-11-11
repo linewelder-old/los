@@ -91,6 +91,7 @@ namespace keyboard {
         F7 = 0x83,
         MEDIA_WWW_SEARCH = 0xe010,
         RIGHT_ALT = 0xe011,
+        PRINT_SCREEN = 0xe012,
         RIGHT_CTRL = 0xe014,
         MEDIA_PREVIOUS_TRACK = 0xe015,
         MEDIA_WWW_FAVOURITES = 0xe018,

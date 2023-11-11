@@ -186,7 +186,10 @@ namespace keyboard {
                     }
                 }
 
-                if (callback) {
+                // Scan code 0xe07c only appears as the second half of the Print Screen
+                // scancode, so we ignore it and use the first half to identify
+                // Print Screen.
+                if (scancode != 0xe07c && callback) {
                     char character = modifiers & MODIFIER_SHIFT
                         ? get_key_character_shifted(scancode)
                         : get_key_character(scancode);
