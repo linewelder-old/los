@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include "idt.h"
 
 namespace ps2 {
     class Device {
@@ -15,6 +16,8 @@ namespace ps2 {
         uint16_t get_type() const;
         const char* get_type_name() const;
         void identify();
+
+        void set_interrupt_handler(idt::Handler handler) const;
 
     private:
         uint16_t id; /* 0 or 1 */

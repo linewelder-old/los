@@ -5,6 +5,7 @@
 #include "exceptions.h"
 #include "printf.h"
 #include "terminal.h"
+#include "pic.h"
 
 namespace ps2 {
     static Device devices[2];
@@ -224,6 +225,11 @@ namespace ps2 {
             case 0xffff: return "Ancient AT keyboard";
             default: return "Unknown";
         }
+    }
+
+    void Device::set_interrupt_handler(idt::Handler handler) const {
+        idt::register_interrupt(
+            pic::get_interrupt_vector(id == 0 ? 1 : 12), handler);
     }
 
     bool try_poll(uint8_t& output, int max_cycles) {
