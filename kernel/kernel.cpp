@@ -25,8 +25,8 @@ extern "C" void kmain() {
     terminal::write_cstr("Connected PS/2 devices:\n");
     for (int i = 0; i < ps2::get_device_count(); i++) {
         const ps2::Device& device = ps2::get_device(i);
-        printf("%d: %s (type: %x)",
-            i, device.get_type_name(), device.get_type());
+        printf("- %s (type: %x)",
+            device.get_type_name(), device.get_type());
 
         if (!keyboard_found && device.get_type() == 0xab83) {
             device.enable_scanning();

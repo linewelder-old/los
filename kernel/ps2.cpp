@@ -3,22 +3,143 @@
 #include <stdint.h>
 #include "asm.h"
 #include "exceptions.h"
+#include "printf.h"
+#include "terminal.h"
 
 namespace ps2 {
-    static Device devices[] = { Device(0), Device(1) };
+    static Device devices[2];
+    static int device_count = 0;
 
     static constexpr uint16_t CONTROL_PORT = 0x64;
     static constexpr uint16_t DATA_PORT = 0x60;
 
-    void init() {
-        disable_translation();
+    static const char* get_port_test_fail_reason(uint8_t code) {
+        switch (code) {
+            case 1: return "clock line stuck low";
+            case 2: return "clock line stuck high";
+            case 3: return "data line stuck low";
+            case 4: return "data line stuck high";
+            default: return "reason unkown";
+        }
+    }
 
-        for (int i = 0; i < get_device_count(); i++) {
-            devices[i].disable_scanning();
+    /// Port: 0 or 1.
+    static bool test_port(int port) {
+        outb(CONTROL_PORT, port == 0 ? 0xae : 0xa8); // Enable port.
+        io_wait();
+        outb(CONTROL_PORT, port == 0 ? 0xab : 0xa9); // Perform test.
+
+        uint8_t response = 0;
+        if (!try_poll(response)) {
+            printf("PS/2 port %d test failed, no response.\n",
+                port);
+            return false;
+        } else if (response != 0x00) {
+            printf("PS/2 port %d test failed, %s (code 0x%x).\n",
+                port, get_port_test_fail_reason(response), response);
+            return false;
         }
 
-        for (int i = 0; i < get_device_count(); i++) {
-            devices[i].identify();
+        printf("PS/2 port %d test succeeded.\n",
+            port);
+        return true;
+    }
+
+    /// Port: 0 or 1.
+    static void init_device(int port) {
+        outb(CONTROL_PORT, port == 0 ? 0xae : 0xa8); // Enable port.
+        io_wait();
+        Device(port).send(0xff); // Reset.
+
+        uint8_t response = 0;
+        if (!try_poll(response)) {
+            printf("PS/2 device %d reset failed, no response.\n",
+                port);
+            return;
+        } else if (response != 0xfa) {
+            printf("PS/2 device %d reset failed, received 0x%x instead of 0xfa.\n",
+                port, response);
+            return;
+        }
+
+        if (!try_poll(response)) {
+            printf("PS/2 device %d reset failed, no status code.\n",
+                port);
+            return;
+        } else if (response != 0xaa) {
+            printf("PS/2 device %d reset failed, status code 0x%x instead of 0xaa.\n",
+                port, response);
+            return;
+        }
+
+        // A mouse sends its device type after test.
+        try_poll(response);
+
+        devices[device_count] = Device(port);
+        Device& device = devices[device_count];
+        device_count++;
+        printf("PS/2 device %d reset succeeded.\n",
+            port);
+
+        device.disable_scanning();
+        device.identify();
+        write_config_byte(read_config_byte() | (1 << port)); // Enable interrupts for the device.
+    }
+
+    void init() {
+        outb(CONTROL_PORT, 0xad); // Disable port 0.
+        io_wait();
+        outb(CONTROL_PORT, 0xa7); // Disbale port 1.
+        io_wait();
+
+        inb(DATA_PORT); // Flush the output buffer.
+
+        uint8_t config_byte = read_config_byte();
+        config_byte &= ~(1 << 0); // Disable port 0 interrupt.
+        config_byte &= ~(1 << 1); // Disable port 1 interrupt.
+        config_byte &= ~(1 << 6); // Disable translation.
+        write_config_byte(config_byte);
+
+        outb(CONTROL_PORT, 0xaa); // Perform self test.
+        uint8_t response = 0;
+        if (!try_poll(response)) {
+            kpanic("PS/2 controller self test failed, no response");
+        } else if (response != 0x55) {
+            kpanic("PS/2 controller self test failed, received 0x%x instead of 0x55",
+                response);
+        }
+
+        // On some devices the controller resets after the test.
+        // Restore the configuration byte.
+        write_config_byte(config_byte);
+
+        bool two_channels = true;
+
+        // Determine if there are 2 channels.
+        outb(CONTROL_PORT, 0xa8); // Try enabling device 1.
+        io_wait();
+        if (read_config_byte() & (1 << 5)) {
+            terminal::write_cstr("PS/2 controller has one channel.\n");
+            device_count = 1;
+            two_channels = false;
+        } else {
+            outb(CONTROL_PORT, 0xa7); // Disable device 1.
+        }
+
+        bool port_0_available = test_port(0);
+        bool port_1_available = two_channels && test_port(1);
+
+        if (!port_0_available && !port_1_available) {
+            terminal::write_cstr("No PS/2 ports available.\n");
+            return;
+        }
+
+        if (port_0_available) {
+            init_device(0);
+        }
+
+        if (port_1_available) {
+            init_device(1);
         }
     }
 
@@ -27,7 +148,7 @@ namespace ps2 {
     }
 
     int get_device_count() {
-        return 2; // For now we assume both devices are available.
+        return device_count;
     }
 
     void Device::send(uint8_t data) const {
@@ -134,9 +255,5 @@ namespace ps2 {
     void write_config_byte(uint8_t value) {
         outb(CONTROL_PORT, 0x60);
         outb(DATA_PORT, value);
-    }
-
-    void disable_translation() {
-        write_config_byte(read_config_byte() & ~64);
     }
 }

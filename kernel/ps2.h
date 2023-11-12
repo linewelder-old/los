@@ -5,6 +5,7 @@
 namespace ps2 {
     class Device {
     public:
+        constexpr Device() : id(0), type(0xffff) {}
         constexpr Device(uint16_t id) : id(id), type(0xffff) {}
 
         void send(uint8_t data) const;
@@ -34,6 +35,4 @@ namespace ps2 {
     uint8_t read_config_byte();
 
     void write_config_byte(uint8_t value);
-
-    void disable_translation();
 }
