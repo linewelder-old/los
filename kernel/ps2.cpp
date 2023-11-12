@@ -167,7 +167,7 @@ namespace ps2 {
         }
 
         if (response != 0xfa) {
-            kpanic("%s (PS/2 device %d) failed, received %x instead of 0xfa (acknowledge)",
+            kpanic("%s (PS/2 device %d) failed, received 0x%x instead of 0xfa",
                 what, device_id, response);
         }
     }
