@@ -28,7 +28,7 @@ extern "C" void kmain() {
         printf("%d: %s (type: %x)",
             i, device.get_type_name(), device.get_type());
 
-        if (device.get_type() == 0xab83) {
+        if (!keyboard_found && device.get_type() == 0xab83) {
             device.enable_scanning();
             idt::register_interrupt(i == 0 ? 
                 0x21 : 0x2c, keyboard::irq_handler);
