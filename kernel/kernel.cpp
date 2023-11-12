@@ -11,18 +11,24 @@
 #include "printf.h"
 
 extern "C" void kmain() {
-    gdt::init();
-
-    idt::init();
-    register_exception_handlers();
-    pic::init(0x20, 0x28);
-
     terminal::clear();
     terminal::write_cstr("Los\n");
 
+    terminal::write_cstr("Initializing the GDT...\n");
+    gdt::init();
+
+    terminal::write_cstr("Initializing the IDT...\n");
+    idt::init();
+    register_exception_handlers();
+
+    terminal::write_cstr("Initializing PIC...\n");
+    pic::init(0x20, 0x28);
+
+    terminal::write_cstr("Initializing the PS/2 controller...\n");
     ps2::init();
+
     bool keyboard_found = false;
-    terminal::write_cstr("Connected PS/2 devices:\n");
+    terminal::write_cstr("\nConnected PS/2 devices:\n");
     for (int i = 0; i < ps2::get_device_count(); i++) {
         const ps2::Device& device = ps2::get_device(i);
         printf("- %s (type: %x)",
@@ -40,8 +46,6 @@ extern "C" void kmain() {
     }
     if (!keyboard_found) kpanic("No keyboard");
 
-    terminal::putchar('\n');
-
     keyboard::set_callback([](keyboard::KeyEventArgs args) {
         if (!args.released && args.character) {
             terminal::putchar(args.character);
@@ -49,6 +53,8 @@ extern "C" void kmain() {
     });
     pic::clear_mask(1);
     enable_interrupts();
+
+    terminal::write_cstr("\nYou can type\n\n");
     for (;;) {
         asm volatile("hlt");
     }
