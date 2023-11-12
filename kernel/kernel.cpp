@@ -22,7 +22,7 @@ extern "C" void kmain() {
     register_exception_handlers();
 
     terminal::write_cstr("Initializing PIC...\n");
-    pic::init(0x20, 0x28);
+    pic::init();
 
     terminal::write_cstr("Initializing the PS/2 controller...\n");
     ps2::init();

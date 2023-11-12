@@ -4,6 +4,9 @@
 #include "asm.h"
 
 namespace pic {
+    static constexpr uint8_t PIC1_VECTOR_OFFSET = 0x20;
+    static constexpr uint8_t PIC2_VECTOR_OFFSET = 0x28;
+
     static constexpr uint16_t PIC1_COMMAND_PORT = 0x20;
     static constexpr uint16_t PIC1_DATA_PORT = 0x21;
     static constexpr uint16_t PIC2_COMMAND_PORT = 0xa0;
@@ -23,7 +26,7 @@ namespace pic {
 
     static constexpr uint8_t END_OF_INTERRUPT = 0x20;
 
-    void init(uint8_t pic1_vector_offset, uint8_t pic2_vector_offset) {
+    void init() {
         // Start the initialization sequence in cascade mode.
         outb(PIC1_COMMAND_PORT, ICW1_INIT | ICW1_ICW4);
         io_wait();
@@ -31,9 +34,9 @@ namespace pic {
         io_wait();
 
         // ICW2: Set up vector offsets.
-        outb(PIC1_DATA_PORT, pic1_vector_offset);
+        outb(PIC1_DATA_PORT, PIC1_VECTOR_OFFSET);
         io_wait();
-        outb(PIC2_DATA_PORT, pic2_vector_offset);
+        outb(PIC2_DATA_PORT, PIC2_VECTOR_OFFSET);
         io_wait();
 
         // ICW3:
@@ -85,5 +88,13 @@ namespace pic {
         }
 
         outb(PIC1_COMMAND_PORT, END_OF_INTERRUPT);
+    }
+
+    uint8_t get_interrupt_vector(uint8_t irq) {
+        if (irq < 8) {
+            return PIC1_VECTOR_OFFSET + irq;
+        } else {
+            return PIC2_VECTOR_OFFSET + irq - 8;
+        }
     }
 }
