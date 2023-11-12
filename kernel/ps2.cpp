@@ -108,6 +108,12 @@ namespace ps2 {
     bool try_poll(uint8_t& output, int max_cycles) {
         int cycles = 0;
         while (!(inb(CONTROL_PORT) & 1) && cycles < max_cycles) {
+            asm volatile(
+                "nop\n\t"
+                "nop\n\t"
+                "nop\n\t"
+                "nop\n\t"
+                "nop\n\t");
             cycles++;
             if (cycles == max_cycles) return false;
         }

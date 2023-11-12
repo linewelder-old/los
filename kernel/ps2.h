@@ -27,7 +27,7 @@ namespace ps2 {
     /// 1 or 2.
     int get_device_count();
 
-    bool try_poll(uint8_t& output, int max_cycles = 20);
+    bool try_poll(uint8_t& output, int max_cycles = 500);
 
     uint8_t read_input();
 
