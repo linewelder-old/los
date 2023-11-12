@@ -22,8 +22,8 @@ kernel:
 $(TARGET_ISO): $(ISO_DIR)/boot/los.bin $(ISO_DIR)/boot/grub/grub.cfg
 	grub-mkrescue -o $@ $(ISO_DIR)
 
-$(ISO_DIR)/boot/los.bin: $(TARGET_BIN) | $(ISO_DIR)/boot/grub
-	cp $< $(ISO_DIR)/boot
+$(ISO_DIR)/boot/los.bin: kernel | $(ISO_DIR)/boot/grub
+	cp $(TARGET_BIN) $(ISO_DIR)/boot
 
 $(ISO_DIR)/boot/grub/grub.cfg: | $(ISO_DIR)/boot/grub
 	echo 'menuentry "los" {' >> $@
