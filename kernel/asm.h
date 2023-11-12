@@ -30,6 +30,10 @@ inline uint8_t inb(uint16_t address) {
     return result;
 }
 
+inline void io_wait() {
+    outb(0x80, 0);
+}
+
 inline void disable_interrupts() {
     asm volatile("cli");
 }

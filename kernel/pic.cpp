@@ -3,10 +3,6 @@
 #include <stdint.h>
 #include "asm.h"
 
-static inline void io_wait() {
-    outb(0x80, 0);
-}
-
 namespace pic {
     static constexpr uint16_t PIC1_COMMAND_PORT = 0x20;
     static constexpr uint16_t PIC1_DATA_PORT = 0x21;
