@@ -121,7 +121,6 @@ namespace pci {
     static void check_bus(uint8_t bus);
 
     static void check_function(Function func) {
-        
         add_function(func);
 
         if (func.get_full_class() == 0x0604) {

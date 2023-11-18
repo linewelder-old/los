@@ -9,15 +9,13 @@
 #include "keyboard.h"
 #include "terminal.h"
 #include "printf.h"
+#include "pci.h"
 
 extern "C" void kmain() {
     terminal::clear();
     terminal::write_cstr("Los\n");
 
-    terminal::write_cstr("Initializing the GDT...\n");
     gdt::init();
-
-    terminal::write_cstr("Initializing the IDT...\n");
     idt::init();
     register_exception_handlers();
 
@@ -44,6 +42,19 @@ extern "C" void kmain() {
         terminal::putchar('\n');
     }
     if (!keyboard_found) kpanic("No keyboard");
+
+    terminal::write_cstr("\nDetecting connected PCI devices...\n");
+    pci::init();
+
+    terminal::write_cstr("\nConnected PCI devices:\n");
+    for (size_t i = 0; i < pci::get_function_count(); i++) {
+        const pci::Function& func = pci::get_function(i);
+        printf(
+            "%d:%d.%d Class: %x Vendor: %x Device: %x\n",
+            func.get_bus(), func.get_device(), func.get_function(),
+            func.get_full_class(),
+            func.get_vendor(), func.get_device_id());
+    }
 
     keyboard::set_callback([](keyboard::KeyEventArgs args) {
         if (!args.released && args.character) {
