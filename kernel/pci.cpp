@@ -109,8 +109,25 @@ namespace pci {
         return config_read_u16(bus, device, function, 0x0a);
     }
 
+    /// Programming interface byte.
+    uint8_t Function::get_prog_if() const {
+        return config_read_u8(bus, device, function, 0x09);
+    }
+
     bool Function::has_multiple_functions() const {
         return config_read_u8(bus, device, function, 0x0e) & 0x80;
+    }
+
+    /**
+     * Read I/O port written in a Base Address Regiter.
+     * If the BAR contains a memory address, the returned value is undefined.
+     * Does not work for PCI-to-CardBus.
+     *
+     * offset - 0..1 for PCI-to-PCI bridges,
+     *          0..5 for everything else.
+     */
+    uint32_t Function::get_bar_io(uint8_t offset) const {
+        return config_read_u32(bus, device, function, 0x10 + 4 * offset) & 0xffff'fffc;
     }
 
     /// For PCI-to-PCI bridges only.

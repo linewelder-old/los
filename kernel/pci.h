@@ -17,7 +17,18 @@ namespace pci {
         uint16_t get_vendor() const;
         uint16_t get_device_id() const;
         uint16_t get_full_class() const;
+        /// Programming interface byte.
+        uint8_t get_prog_if() const;
         bool has_multiple_functions() const;
+
+        /**
+         * Read I/O port written in a Base Address Regiter.
+         * Does not work for PCI-to-CardBus.
+         *
+         * offset - 0..1 for PCI-to-PCI bridges,
+         *          0..5 for everything else.
+         */
+        uint32_t get_bar_io(uint8_t offset) const;
 
         /// For PCI-to-PCI bridges only.
         uint8_t get_secondary_bus() const;
