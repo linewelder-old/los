@@ -8,6 +8,12 @@ inline void outl(uint16_t address, uint32_t data) {
         : "d" (address), "a" (data));
 }
 
+inline void outw(uint16_t address, uint16_t data) {
+    asm volatile("outl %1, %0"
+        :
+        : "d" (address), "a" (data));
+}
+
 inline void outb(uint16_t address, uint8_t data) {
     asm volatile("outb %1, %0"
         :
@@ -17,6 +23,14 @@ inline void outb(uint16_t address, uint8_t data) {
 inline uint32_t inl(uint16_t address) {
     uint32_t result;
     asm volatile("inl %1, %0"
+        : "=a" (result)
+        : "d" (address));
+    return result;
+}
+
+inline uint16_t inw(uint16_t address) {
+    uint16_t result;
+    asm volatile("inw %1, %0"
         : "=a" (result)
         : "d" (address));
     return result;
