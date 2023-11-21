@@ -10,6 +10,7 @@
 #include "terminal.h"
 #include "printf.h"
 #include "pci.h"
+#include "ide.h"
 
 extern "C" void kmain() {
     terminal::clear();
@@ -54,6 +55,16 @@ extern "C" void kmain() {
             func.get_bus(), func.get_device(), func.get_function(),
             func.get_full_class(),
             func.get_vendor(), func.get_device_id());
+
+        // PCI IDE
+        if (func.get_full_class() == 0x0101) {
+            printf("  Prog IF: %x\n", func.get_prog_if());
+            for (int i = 0; i < 5; i++) {
+                printf("  BAR%d: %x  ", i, func.get_bar_io(i));
+            }
+            terminal::putchar('\n');
+            ide::init();
+        }
     }
 
     keyboard::set_callback([](keyboard::KeyEventArgs args) {
