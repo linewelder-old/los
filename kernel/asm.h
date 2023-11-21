@@ -55,3 +55,15 @@ inline void disable_interrupts() {
 inline void enable_interrupts() {
     asm volatile("sti");
 }
+
+/**
+ * To be used in polling loops.
+ */
+inline void tiny_delay() {
+    asm volatile(
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t");
+}
