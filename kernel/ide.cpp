@@ -1,7 +1,7 @@
 #include "ide.h"
 
 #include "asm.h"
-#include "printf.h"
+#include "log.h"
 
 namespace ide {
     // Flags in the Status register.
@@ -273,10 +273,10 @@ namespace ide {
                 case IdentifyResultStatus::NoDevice:
                     break;
                 case IdentifyResultStatus::UnknownDeviceType:
-                    printf("Error identifying disk %d: Unknown device type\n", id);
+                    LOG_ERROR("Error identifying disk %d: Unknown device type\n", id);
                     break;
                 case IdentifyResultStatus::RequestError:
-                    printf("Error identifying disk %d: Device returned error code %x\n",
+                    LOG_ERROR("Error identifying disk %d: Device returned error code %x\n",
                         id, result.error_byte);
                     break;
                 }

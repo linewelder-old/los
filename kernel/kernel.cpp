@@ -9,6 +9,7 @@
 #include "keyboard.h"
 #include "terminal.h"
 #include "printf.h"
+#include "log.h"
 #include "pci.h"
 #include "ide.h"
 
@@ -20,10 +21,10 @@ extern "C" void kmain() {
     idt::init();
     register_exception_handlers();
 
-    terminal::write_cstr("Initializing PIC...\n");
+    LOG_INFO("Initializing PIC...");
     pic::init();
 
-    terminal::write_cstr("Initializing the PS/2 controller...\n");
+    LOG_INFO("Initializing the PS/2 controller...");
     ps2::init();
 
     bool keyboard_found = false;
@@ -44,7 +45,7 @@ extern "C" void kmain() {
     }
     if (!keyboard_found) kpanic("No keyboard");
 
-    terminal::write_cstr("\nDetecting connected PCI devices...\n");
+    LOG_INFO("Detecting connected PCI devices...");
     pci::init();
 
     terminal::write_cstr("\nConnected PCI devices:\n");
@@ -65,7 +66,9 @@ extern "C" void kmain() {
     terminal::write_cstr("\nConnected disks:\n");
     for (size_t i = 0; i < ide::get_disk_count(); i++) {
         const ide::Device& disk = ide::get_disk(i);
-        printf("- %s (%d Kb)\n", disk.model, disk.size / 2);
+        printf("- %s (%d Kb) Inteface: %s\n",
+            disk.model, disk.size / 2,
+            (const char*[]){ "ATA", "ATAPI" }[(int)disk.interface]);
     };
 
     keyboard::set_callback([](keyboard::KeyEventArgs args) {

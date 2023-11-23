@@ -3,8 +3,7 @@
 #include <stdint.h>
 #include "asm.h"
 #include "exceptions.h"
-#include "printf.h"
-#include "terminal.h"
+#include "log.h"
 #include "pic.h"
 
 namespace ps2 {
@@ -32,16 +31,16 @@ namespace ps2 {
 
         uint8_t response = 0;
         if (!try_poll(response)) {
-            printf("PS/2 port %d test failed, no response.\n",
+            LOG_ERROR("PS/2 port %d test failed, no response.",
                 port);
             return false;
         } else if (response != 0x00) {
-            printf("PS/2 port %d test failed, %s (code 0x%x).\n",
+            LOG_ERROR("PS/2 port %d test failed, %s (code 0x%x).",
                 port, get_port_test_fail_reason(response), response);
             return false;
         }
 
-        printf("PS/2 port %d test succeeded.\n",
+        LOG_INFO("PS/2 port %d test succeeded.",
             port);
         return true;
     }
@@ -54,21 +53,21 @@ namespace ps2 {
 
         uint8_t response = 0;
         if (!try_poll(response)) {
-            printf("PS/2 device %d reset failed, no response.\n",
+            LOG_ERROR("PS/2 device %d reset failed, no response.",
                 port);
             return;
         } else if (response != 0xfa) {
-            printf("PS/2 device %d reset failed, received 0x%x instead of 0xfa.\n",
+            LOG_ERROR("PS/2 device %d reset failed, received 0x%x instead of 0xfa.",
                 port, response);
             return;
         }
 
         if (!try_poll(response)) {
-            printf("PS/2 device %d reset failed, no status code.\n",
+            LOG_ERROR("PS/2 device %d reset failed, no status code.",
                 port);
             return;
         } else if (response != 0xaa) {
-            printf("PS/2 device %d reset failed, status code 0x%x instead of 0xaa.\n",
+            LOG_ERROR("PS/2 device %d reset failed, status code 0x%x instead of 0xaa.",
                 port, response);
             return;
         }
@@ -79,7 +78,7 @@ namespace ps2 {
         devices[device_count] = Device(port);
         Device& device = devices[device_count];
         device_count++;
-        printf("PS/2 device %d reset succeeded.\n",
+        LOG_INFO("PS/2 device %d reset succeeded.",
             port);
 
         device.disable_scanning();
@@ -120,7 +119,7 @@ namespace ps2 {
         outb(CONTROL_PORT, 0xa8); // Try enabling device 1.
         io_wait();
         if (read_config_byte() & (1 << 5)) {
-            terminal::write_cstr("PS/2 controller has one channel.\n");
+            LOG_INFO("PS/2 controller has one channel.");
             device_count = 1;
             two_channels = false;
         } else {
@@ -131,7 +130,7 @@ namespace ps2 {
         bool port_1_available = two_channels && test_port(1);
 
         if (!port_0_available && !port_1_available) {
-            terminal::write_cstr("No PS/2 ports available.\n");
+            LOG_WARN("No PS/2 ports available.");
             return;
         }
 

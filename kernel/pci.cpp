@@ -1,7 +1,7 @@
 #include "pci.h"
 
 #include "asm.h"
-#include "printf.h"
+#include "log.h"
 
 namespace pci {
     static constexpr uint16_t CONFIG_ADDRESS_PORT = 0xcf8;
@@ -77,7 +77,7 @@ namespace pci {
 
     static void add_function(Function function) {
         if (function_count >= MAX_FUNCTION_COUNT) {
-            printf("Two many connected PCI device functions. The kernel supports up to 256.\n");
+            LOG_ERROR("Two many connected PCI device functions. The kernel supports up to 256.");
             return;
         }
 
