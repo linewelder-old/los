@@ -119,6 +119,10 @@ namespace ide {
             outb(base_port + 7, (uint8_t)data);
         }
 
+        void disable_irqs() const {
+            outb(control_base_port + 2, 2); // Set bit 1 in the control port.
+        }
+
         // Need to add 400ns delays before all the status registers are up to date.
         // https://wiki.osdev.org/ATA_PIO_Mode#400ns_delays
         void delay_400ns() const {
@@ -244,6 +248,9 @@ namespace ide {
             channels[0].bus_master_port = bars[4];
             channels[1].bus_master_port = bars[4] + 8;
         }
+
+        channels[0].disable_irqs();
+        channels[1].disable_irqs();
 
         for (int channel = 0; channel < 2; channel++) {
             for (int drive_type = 0; drive_type < 2; drive_type++) {
