@@ -28,7 +28,11 @@ namespace ide {
     constexpr size_t IDENT_DEVICE_TYPE  = 0;
     constexpr size_t IDENT_MODEL        = 54;
     constexpr size_t IDENT_FEATURES     = 98;
+    constexpr size_t IDENT_MAX_LBA      = 120;
     constexpr size_t IDENT_COMMAND_SETS = 164;
+    constexpr size_t IDENT_MAX_LBA_EXT  = 200;
+
+    constexpr uint32_t COMMAND_SETS_USES_48_BIT = 1 << 26;
 
     /*
     Base IO port is:
@@ -196,6 +200,13 @@ namespace ide {
         signature = *(uint16_t*)(identification + IDENT_DEVICE_TYPE);
         features = *(uint16_t*)(identification + IDENT_FEATURES);
         command_sets = *(uint32_t*)(identification + IDENT_COMMAND_SETS);
+
+        if (command_sets & COMMAND_SETS_USES_48_BIT) {
+            size = *(uint32_t*)(identification + IDENT_MAX_LBA_EXT);
+        } else { // CHS or 28-bit addressing.
+            size = *(uint32_t*)(identification + IDENT_MAX_LBA);
+        }
+
         for (int i = 0; i < 40; i++) {
             model[i] = identification[IDENT_MODEL + i];
         }
