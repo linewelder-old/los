@@ -84,9 +84,6 @@ namespace ide {
 
     class Channel {
     public:
-        constexpr Channel(uint16_t base_port)
-            : base_port(base_port), control_base_port(0), bus_master_port(0) {}
-
         uint16_t read_data() const {
             return inw(base_port);
         }
@@ -137,11 +134,13 @@ namespace ide {
             };
         }
 
-    private:
         uint16_t base_port;
         uint16_t control_base_port;
         uint16_t bus_master_port;
-    } channels[2] = { Channel(0x1f0), Channel(0x170) };
+    } channels[2] = {
+        { 0x1f0, 0x3f6, 0 },
+        { 0x170, 0x376, 0 },
+    };
 
     IdentifyResult Device::identify() {
         Channel& channel = channels[(int)channel_type];
@@ -231,7 +230,21 @@ namespace ide {
         return disk_count;
     }
 
-    void init() {
+    void init(const pci::Function& func) {
+        uint16_t bars[5];
+        for (uint8_t i = 0; i < 5; i++) {
+            bars[i] = func.get_bar_io(i);
+        }
+
+        if (bars[0]) channels[0].base_port = bars[0];
+        if (bars[1]) channels[0].control_base_port = bars[1];
+        if (bars[2]) channels[1].base_port = bars[2];
+        if (bars[3]) channels[1].control_base_port = bars[3];
+        if (bars[4]) {
+            channels[0].bus_master_port = bars[4];
+            channels[1].bus_master_port = bars[4] + 8;
+        }
+
         for (int channel = 0; channel < 2; channel++) {
             for (int drive_type = 0; drive_type < 2; drive_type++) {
                 int id = channel * 2 + drive_type;

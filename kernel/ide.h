@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#include "pci.h"
+
 namespace ide {
     enum class ChannelType {
         PRIMARY,
@@ -50,7 +52,7 @@ namespace ide {
         char model[41] = "";
     };
 
-    void init();
+    void init(const pci::Function& func);
 
     const ide::Device& get_disk(size_t id);
     size_t get_disk_count();

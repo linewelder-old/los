@@ -58,7 +58,7 @@ extern "C" void kmain() {
 
         // PCI IDE
         if (func.get_full_class() == 0x0101) {
-            ide::init();
+            ide::init(func);
         }
     }
 
