@@ -19,6 +19,18 @@ namespace ide {
         ATAPI,
     };
 
+    enum class IdentifyResultStatus {
+        Success,
+        NoDevice,
+        UnknownDeviceType,
+        RequestError, // Details are in error_byte.
+    };
+
+    struct IdentifyResult {
+        IdentifyResultStatus status;
+        uint8_t error_byte; // Errors read from the error register.
+    };
+
     class Device {
     public:
         constexpr Device()
@@ -26,8 +38,7 @@ namespace ide {
         constexpr Device(ChannelType channel_type, DriveType drive_type)
             : channel_type(channel_type), drive_type(drive_type) {}
 
-        /// Returns 0 in case of success, the error message otherwise.
-        const char* identify();
+        IdentifyResult identify();
 
         ChannelType channel_type;
         DriveType drive_type;

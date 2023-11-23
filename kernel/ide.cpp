@@ -100,6 +100,10 @@ namespace ide {
             return inb(base_port + 7);
         }
 
+        uint8_t read_errors() const {
+            return inb(base_port + 1);
+        }
+
         void write_sector_count(uint8_t value) const {
             outb(base_port + 2, value);
         }
@@ -139,7 +143,7 @@ namespace ide {
         uint16_t bus_master_port;
     } channels[2] = { Channel(0x1f0), Channel(0x170) };
 
-    const char* Device::identify() {
+    IdentifyResult Device::identify() {
         Channel& channel = channels[(int)channel_type];
 
         switch (drive_type) {
@@ -157,7 +161,7 @@ namespace ide {
 
         channel.delay_400ns();
         if (channel.read_status() == 0) {
-            return "Device does not exist";
+            return { IdentifyResultStatus::NoDevice, 0 };
         }
 
         interface = InterfaceType::ATA;
@@ -178,7 +182,7 @@ namespace ide {
             if (device_type == 0xeb14 || device_type == 0x9669) {
                 interface = InterfaceType::ATAPI;
             } else {
-                return "Unkown device type";
+                return { IdentifyResultStatus::UnknownDeviceType, 0 };
             }
  
             channel.write_command(Command::IDENTIFY_PACKET);
@@ -187,7 +191,8 @@ namespace ide {
 
         channel.wait_request_ready();
         if ((channel.read_status() & STATUS_ERROR)) {
-            return "Request error";
+            uint8_t error_byte = channel.read_errors();
+            return { IdentifyResultStatus::RequestError, error_byte };
         };
 
         uint16_t identification[256];
@@ -212,7 +217,7 @@ namespace ide {
         }
         model[40] = '\0';
 
-        return 0;
+        return { IdentifyResultStatus::Success, 0 };
     }
 
     static ide::Device disks[4];
@@ -229,16 +234,25 @@ namespace ide {
     void init() {
         for (int channel = 0; channel < 2; channel++) {
             for (int drive_type = 0; drive_type < 2; drive_type++) {
+                int id = channel * 2 + drive_type;
                 ide::Device disk((ide::ChannelType)channel, (ide::DriveType)drive_type);
-                const char* error = disk.identify();
-                if (error) {
-                    printf("Error identifying disk %d: %s\n",
-                        channel * 2 + drive_type, error);
-                    continue;
-                }
+                IdentifyResult result = disk.identify();
 
-                disks[disk_count] = disk;
-                disk_count++;
+                switch (result.status) {
+                case IdentifyResultStatus::Success:
+                    disks[disk_count] = disk;
+                    disk_count++;
+                    break;
+                case IdentifyResultStatus::NoDevice:
+                    break;
+                case IdentifyResultStatus::UnknownDeviceType:
+                    printf("Error identifying disk %d: Unknown device type\n", id);
+                    break;
+                case IdentifyResultStatus::RequestError:
+                    printf("Error identifying disk %d: Device returned error code %x\n",
+                        id, result.error_byte);
+                    break;
+                }
             }
         }
     }
