@@ -1,6 +1,5 @@
 #include "ide.h"
 
-#include <stddef.h>
 #include "asm.h"
 #include "printf.h"
 
@@ -205,16 +204,30 @@ namespace ide {
         return 0;
     }
 
+    static ide::Device disks[4];
+    static size_t disk_count = 0;
+
+    const ide::Device& get_disk(size_t id) {
+        return disks[id];
+    }
+
+    size_t get_disk_count() {
+        return disk_count;
+    }
+
     void init() {
         for (int channel = 0; channel < 2; channel++) {
             for (int drive_type = 0; drive_type < 2; drive_type++) {
                 ide::Device disk((ide::ChannelType)channel, (ide::DriveType)drive_type);
                 const char* error = disk.identify();
-                if (!error) {
-                    printf("  - [%d, %d] %s\n", channel, drive_type, disk.model);
-                } else {
-                    printf("  - [%d, %d] Error: %s\n", channel, drive_type, error);
+                if (error) {
+                    printf("Error identifying disk %d: %s\n",
+                        channel * 2 + drive_type, error);
+                    continue;
                 }
+
+                disks[disk_count] = disk;
+                disk_count++;
             }
         }
     }

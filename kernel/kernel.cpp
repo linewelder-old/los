@@ -58,14 +58,15 @@ extern "C" void kmain() {
 
         // PCI IDE
         if (func.get_full_class() == 0x0101) {
-            printf("  Prog IF: %x\n", func.get_prog_if());
-            for (int i = 0; i < 5; i++) {
-                printf("  BAR%d: %x  ", i, func.get_bar_io(i));
-            }
-            terminal::putchar('\n');
             ide::init();
         }
     }
+
+    terminal::write_cstr("\nConnected disks:\n");
+    for (size_t i = 0; i < ide::get_disk_count(); i++) {
+        const ide::Device& disk = ide::get_disk(i);
+        printf("- %s (%d Kb)\n", disk.model, disk.size / 2);
+    };
 
     keyboard::set_callback([](keyboard::KeyEventArgs args) {
         if (!args.released && args.character) {

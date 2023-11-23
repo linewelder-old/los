@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <stddef.h>
 
 namespace ide {
     enum class ChannelType {
@@ -20,6 +21,8 @@ namespace ide {
 
     class Device {
     public:
+        constexpr Device()
+            : channel_type(ChannelType::PRIMARY), drive_type(DriveType::MASTER) {}
         constexpr Device(ChannelType channel_type, DriveType drive_type)
             : channel_type(channel_type), drive_type(drive_type) {}
 
@@ -37,4 +40,7 @@ namespace ide {
     };
 
     void init();
+
+    const ide::Device& get_disk(size_t id);
+    size_t get_disk_count();
 }
