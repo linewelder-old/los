@@ -24,13 +24,13 @@ namespace ide {
     constexpr uint8_t ERROR_TRACK_0_NOT_FOUND    = 0x02;
     constexpr uint8_t ERROR_NO_ADDRE_MARK        = 0x01;
 
-    // Offsets in the identification space.
+    // Offsets in the identification space (in uint16_t's).
     constexpr size_t IDENT_DEVICE_TYPE  = 0;
-    constexpr size_t IDENT_MODEL        = 54;
-    constexpr size_t IDENT_FEATURES     = 98;
-    constexpr size_t IDENT_MAX_LBA      = 120;
-    constexpr size_t IDENT_COMMAND_SETS = 164;
-    constexpr size_t IDENT_MAX_LBA_EXT  = 200;
+    constexpr size_t IDENT_MODEL        = 27;
+    constexpr size_t IDENT_FEATURES     = 49;
+    constexpr size_t IDENT_MAX_LBA      = 60;
+    constexpr size_t IDENT_COMMAND_SETS = 82;
+    constexpr size_t IDENT_MAX_LBA_EXT  = 100;
 
     constexpr uint32_t COMMAND_SETS_USES_48_BIT = 1 << 26;
 
@@ -190,15 +190,13 @@ namespace ide {
             return "Request error";
         };
 
-        uint8_t identification[512];
+        uint16_t identification[256];
         for (int i = 0; i < 256; i++) {
-            uint16_t read = channel.read_data();
-            identification[2 * i] = read >> 8;
-            identification[2 * i + 1] = read & 0xff;
+            identification[i] = channel.read_data();
         }
 
-        signature = *(uint16_t*)(identification + IDENT_DEVICE_TYPE);
-        features = *(uint16_t*)(identification + IDENT_FEATURES);
+        signature = identification[IDENT_DEVICE_TYPE];
+        features = identification[IDENT_FEATURES];
         command_sets = *(uint32_t*)(identification + IDENT_COMMAND_SETS);
 
         if (command_sets & COMMAND_SETS_USES_48_BIT) {
@@ -207,8 +205,10 @@ namespace ide {
             size = *(uint32_t*)(identification + IDENT_MAX_LBA);
         }
 
-        for (int i = 0; i < 40; i++) {
-            model[i] = identification[IDENT_MODEL + i];
+        // I have no idea why we have to swap the characters.
+        for (int i = 0; i < 20; i ++) {
+            model[2 * i] = identification[IDENT_MODEL + i] >> 8;
+            model[2 * i + 1] = identification[IDENT_MODEL + i] & 0xff;
         }
         model[40] = '\0';
 
