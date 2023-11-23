@@ -214,11 +214,18 @@ namespace ide {
         }
 
         // I have no idea why we have to swap the characters.
+        int last_nonspace_index = 0;
         for (int i = 0; i < 20; i ++) {
-            model[2 * i] = identification[IDENT_MODEL + i] >> 8;
-            model[2 * i + 1] = identification[IDENT_MODEL + i] & 0xff;
+            char a = identification[IDENT_MODEL + i] >> 8;
+            char b = identification[IDENT_MODEL + i] & 0xff;
+
+            if (b != ' ') last_nonspace_index = 2 * i + 1;
+            else if (a != ' ') last_nonspace_index = 2 * i;
+
+            model[2 * i] = a;
+            model[2 * i + 1] = b;
         }
-        model[40] = '\0';
+        model[last_nonspace_index + 1] = '\0';
 
         return { IdentifyResultStatus::Success, 0 };
     }
