@@ -33,6 +33,18 @@ namespace ide {
         uint8_t error_byte; // Errors read from the error register.
     };
 
+    enum class Direction {
+        READ,
+        WRITE,
+    };
+
+    enum class PollingResult {
+        SUCCESS,
+        ERROR,
+        DRIVE_WRITE_FAULT,
+        REQUEST_NOT_READY,
+    };
+
     class Device {
     public:
         constexpr Device()
@@ -41,6 +53,13 @@ namespace ide {
             : channel_type(channel_type), drive_type(drive_type) {}
 
         IdentifyResult identify();
+
+        /**
+         * Access the drive (read or write).
+         * NOTE: Since LBA is a uint32_t, we can only access 2TB.
+         */
+        PollingResult access(
+            Direction direction, uint32_t lba, uint8_t sector_count, void* buffer) const;
 
         ChannelType channel_type;
         DriveType drive_type;

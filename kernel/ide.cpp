@@ -32,6 +32,8 @@ namespace ide {
     constexpr size_t IDENT_COMMAND_SETS = 82;
     constexpr size_t IDENT_MAX_LBA_EXT  = 100;
 
+    constexpr uint16_t FEATURES_SUPPORTS_LBA = 1 << 9;
+
     constexpr uint32_t COMMAND_SETS_USES_48_BIT = 1 << 26;
 
     /*
@@ -61,7 +63,7 @@ namespace ide {
         STATUS        = 0x07, // Read only.
         COMMAND       = 0x07, // Write only.
 
-        // Offsets from the base IO port (I don't know how they work yet).
+        // Offsets from the base IO port (written before their lower counterparts).
         SECTOR_COUNT1 = 0x12,
         LBA3          = 0x13,
         LBA4          = 0x14,
@@ -72,13 +74,12 @@ namespace ide {
         CONTROL       = 0x22, // Write only.
     };
 
-    enum class Direction {
-        READ,
-        WRITE,
-    };
-
     enum class Command {
-        IDENTIFY = 0xec,
+        READ_PIO        = 0x20,
+        READ_PIO_EXT    = 0x24,
+        WRITE_PIO       = 0x30,
+        WRITE_PIO_EXT   = 0x34,
+        IDENTIFY        = 0xec,
         IDENTIFY_PACKET = 0xa1,
     };
 
@@ -109,10 +110,10 @@ namespace ide {
             outb(base_port + 2, value);
         }
 
-        void write_lba_28bit(uint32_t value) const {
-            outb(base_port + 3, (uint8_t)value);
-            outb(base_port + 4, (uint8_t)(value >> 8));
-            outb(base_port + 5, (uint8_t)(value >> 16));
+        void write_lba(uint8_t low, uint8_t mid, uint8_t high) const {
+            outb(base_port + 3, low);
+            outb(base_port + 4, mid);
+            outb(base_port + 5, high);
         }
 
         void write_drive_select(uint8_t value) const {
@@ -140,6 +141,53 @@ namespace ide {
             while (!(read_status() & (STATUS_REQUEST_READY | STATUS_ERROR))) {
                 tiny_delay();
             };
+        }
+
+        void wait_not_busy() const {
+            while (read_status() & STATUS_BUSY) {
+                tiny_delay();
+            };
+        }
+
+        PollingResult poll(bool advanced_check) const {
+            delay_400ns();
+            wait_not_busy();
+
+            if (advanced_check) {
+                uint8_t status = read_status();
+                if (status & STATUS_ERROR) {
+                    return PollingResult::ERROR;
+                }
+
+                if (status & STATUS_DRIVE_WRITE_FAULT) {
+                    return PollingResult::DRIVE_WRITE_FAULT;
+                }
+
+                // No errors, but request is not ready.
+                if ((status & STATUS_REQUEST_READY) == 0) {
+                    return PollingResult::REQUEST_NOT_READY;
+                }
+            }
+
+            return PollingResult::SUCCESS;
+        }
+
+        PollingResult read_sectors(uint8_t sector_count, void* buffer) const {
+            uint16_t* word_buffer = (uint16_t*)buffer; // We read the data in words.
+
+            for (uint8_t i = 0; i < sector_count; i++) {
+                PollingResult result = poll(true);
+                if (result != PollingResult::SUCCESS) {
+                    return result;
+                }
+
+                for (int j = 0; j < 256; j++) {
+                    word_buffer[0] = read_data();
+                    word_buffer++;
+                }
+            }
+
+            return PollingResult::SUCCESS;
         }
 
         uint16_t base_port;
@@ -232,6 +280,80 @@ namespace ide {
         model[last_nonspace_index + 1] = '\0';
 
         return { IdentifyResultStatus::Success, 0 };
+    }
+
+    /**
+     * Access the drive (read or write).
+     * NOTE: Writing is not supported yet.
+     * NOTE: Since LBA is a uint32_t, we can only access 2TB.
+     */
+    PollingResult Device::access(
+        Direction direction, uint32_t lba, uint8_t sector_count, void* buffer) const
+    {
+        enum class AddressMode {
+            CHS,
+            LBA28,
+            LBA48,
+        } address_mode;
+        uint8_t lba_io[6];
+        uint8_t head;
+
+        if (lba >= 0x1000'0000) {
+            address_mode = AddressMode::LBA48;
+            lba_io[0] = (lba & 0x0000'00ff);
+            lba_io[1] = (lba & 0x0000'ff00) >> 8;
+            lba_io[2] = (lba & 0x00ff'0000) >> 16;
+            lba_io[3] = (lba & 0xff00'0000) >> 24;
+            lba_io[4] = 0;
+            lba_io[5] = 0;
+            head      = 0;
+        } else if (features & FEATURES_SUPPORTS_LBA) {
+            address_mode = AddressMode::LBA28;
+            lba_io[0] = (lba & 0x000'00ff);
+            lba_io[1] = (lba & 0x000'ff00) >> 8;
+            lba_io[2] = (lba & 0x0ff'0000) >> 16;
+            lba_io[3] = 0;
+            lba_io[4] = 0;
+            lba_io[5] = 0;
+            head      = (lba & 0xf00'0000) >> 24;
+        } else {
+            address_mode = AddressMode::CHS;
+
+            uint8_t sector = (lba % 63) + 1;
+            uint16_t cylinder = (lba + 1 - sector) / (16 * 63);
+            head = (lba + 1 - sector) % (16 * 63) / 63;
+
+            lba_io[0] = sector;
+            lba_io[1] = cylinder & 0xff;
+            lba_io[2] = cylinder >> 8;
+            lba_io[3] = 0;
+            lba_io[4] = 0;
+            lba_io[5] = 0;
+        }
+
+        const Channel& channel = channels[(int)channel_type];
+        channel.wait_not_busy();
+
+        uint8_t drive_select_value = 0xa0;
+        if (drive_type == DriveType::SLAVE) {
+            drive_select_value |= 1 << 4;
+        }
+        drive_select_value |= head;
+        channel.write_drive_select(drive_select_value);
+
+        if (address_mode == AddressMode::LBA48) {
+            channel.write_sector_count(0);
+            channel.write_lba(lba_io[3], lba_io[4], lba_io[5]);
+        }
+        channel.write_sector_count(sector_count);
+        channel.write_lba(lba_io[0], lba_io[1], lba_io[2]);
+
+        channel.write_command(
+            address_mode == AddressMode::LBA48
+                ? Command::READ_PIO_EXT
+                : Command::READ_PIO);
+
+        return channel.read_sectors(sector_count, buffer);
     }
 
     static ide::Device disks[4];
