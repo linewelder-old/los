@@ -55,11 +55,14 @@ namespace ide {
         IdentifyResult identify();
 
         /**
-         * Access the drive (read or write).
          * NOTE: Since LBA is a uint32_t, we can only access 2TB.
          */
-        PollingResult access(
-            Direction direction, uint32_t lba, uint8_t sector_count, void* buffer) const;
+        PollingResult read(uint32_t lba, uint8_t sector_count, void* buffer) const;
+
+        /**
+         * NOTE: Since LBA is a uint32_t, we can only access 2TB.
+         */
+        void write(uint32_t lba, uint8_t sector_count, void* buffer) const;
 
         ChannelType channel_type;
         DriveType drive_type;
@@ -69,6 +72,14 @@ namespace ide {
         uint32_t command_sets = 0; // Command sets supported.
         uint32_t size = 0; // Size in sectors.
         char model[41] = "";
+
+    private:
+        /**
+         * Access the drive (read or write).
+         * NOTE: Since LBA is a uint32_t, we can only access 2TB.
+         */
+        PollingResult access(
+            Direction direction, uint32_t lba, uint8_t sector_count, void* buffer) const;
     };
 
     void init(const pci::Function& func);

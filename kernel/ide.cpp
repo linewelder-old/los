@@ -390,6 +390,20 @@ namespace ide {
         }
     }
 
+    /**
+     * NOTE: Since LBA is a uint32_t, we can only access 2TB.
+     */
+    PollingResult Device::read(uint32_t lba, uint8_t sector_count, void* buffer) const {
+        return access(Direction::READ, lba, sector_count, buffer);
+    }
+
+    /**
+     * NOTE: Since LBA is a uint32_t, we can only access 2TB.
+     */
+    void Device::write(uint32_t lba, uint8_t sector_count, void* buffer) const {
+        access(Direction::WRITE, lba, sector_count, buffer);
+    }
+
     static ide::Device disks[4];
     static size_t disk_count = 0;
 
