@@ -101,6 +101,10 @@ namespace ide {
             return inb(base_port + 1);
         }
 
+        uint8_t read_alt_status() const {
+            return inb(control_base_port + 2);
+        }
+
         void write_sector_count(uint8_t value) const {
             outb(base_port + 2, value);
         }
@@ -126,10 +130,10 @@ namespace ide {
         // Need to add 400ns delays before all the status registers are up to date.
         // https://wiki.osdev.org/ATA_PIO_Mode#400ns_delays
         void delay_400ns() const {
-            read_status();
-            read_status();
-            read_status();
-            read_status();
+            read_alt_status();
+            read_alt_status();
+            read_alt_status();
+            read_alt_status();
         }
 
         void wait_request_ready() const {
