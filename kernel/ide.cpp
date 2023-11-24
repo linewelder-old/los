@@ -81,12 +81,18 @@ namespace ide {
         WRITE_PIO_EXT   = 0x34,
         IDENTIFY        = 0xec,
         IDENTIFY_PACKET = 0xa1,
+        CACHE_FLUSH     = 0xe7,
+        CACHE_FLUSH_EXT = 0xea,
     };
 
     class Channel {
     public:
         uint16_t read_data() const {
             return inw(base_port);
+        }
+
+        void write_data(uint16_t value) const {
+            outw(base_port, value);
         }
 
         uint16_t read_lba12() const {
@@ -190,6 +196,20 @@ namespace ide {
             return PollingResult::SUCCESS;
         }
 
+        PollingResult write_sectors(uint8_t sector_count, void* buffer) const {
+            uint16_t* word_buffer = (uint16_t*)buffer; // We write the data in words.
+
+            for (uint8_t i = 0; i < sector_count; i++) {
+                poll(false);
+                for (int j = 0; j < 256; j++) {
+                    write_data(word_buffer[0]);
+                    word_buffer++;
+                }
+            }
+
+            return PollingResult::SUCCESS;
+        }
+
         uint16_t base_port;
         uint16_t control_base_port;
         uint16_t bus_master_port;
@@ -284,7 +304,6 @@ namespace ide {
 
     /**
      * Access the drive (read or write).
-     * NOTE: Writing is not supported yet.
      * NOTE: Since LBA is a uint32_t, we can only access 2TB.
      */
     PollingResult Device::access(
@@ -348,12 +367,27 @@ namespace ide {
         channel.write_sector_count(sector_count);
         channel.write_lba(lba_io[0], lba_io[1], lba_io[2]);
 
-        channel.write_command(
-            address_mode == AddressMode::LBA48
-                ? Command::READ_PIO_EXT
-                : Command::READ_PIO);
+        if (direction == Direction::READ) {
+            channel.write_command(
+                address_mode == AddressMode::LBA48
+                    ? Command::READ_PIO_EXT
+                    : Command::READ_PIO);
+            return channel.read_sectors(sector_count, buffer);
+        } else {
+            channel.write_command(
+                address_mode == AddressMode::LBA48
+                    ? Command::WRITE_PIO_EXT
+                    : Command::WRITE_PIO);
 
-        return channel.read_sectors(sector_count, buffer);
+            PollingResult result = channel.write_sectors(sector_count, buffer);
+            if (result != PollingResult::SUCCESS) return result;
+
+            channel.write_command(
+                address_mode == AddressMode::LBA48
+                    ? Command::CACHE_FLUSH_EXT
+                    : Command::CACHE_FLUSH);
+            return channel.poll(false);
+        }
     }
 
     static ide::Device disks[4];
