@@ -9,7 +9,7 @@ inline void outl(uint16_t address, uint32_t data) {
 }
 
 inline void outw(uint16_t address, uint16_t data) {
-    asm volatile("outl %1, %0"
+    asm volatile("outw %1, %0"
         :
         : "d" (address), "a" (data));
 }
