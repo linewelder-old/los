@@ -1,7 +1,7 @@
 #include "pci.h"
 
 #include "asm.h"
-#include "log.h"
+#include "../../log.h"
 
 namespace pci {
     static constexpr uint16_t CONFIG_ADDRESS_PORT = 0xcf8;

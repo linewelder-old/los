@@ -1,7 +1,7 @@
 #include <limits.h>
 #include <stdarg.h>
 
-#include "terminal.h"
+#include "arch/i386/terminal.h"
 
 static int print_number(int value, int base, int max_length) {
     int written = 0;

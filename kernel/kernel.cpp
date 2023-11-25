@@ -1,17 +1,17 @@
 #include <stdint.h>
 
-#include "asm.h"
-#include "gdt.h"
-#include "idt.h"
-#include "exceptions.h"
-#include "pic.h"
-#include "ps2.h"
-#include "keyboard.h"
-#include "terminal.h"
+#include "arch/i386/asm.h"
+#include "arch/i386/gdt.h"
+#include "arch/i386/idt.h"
+#include "arch/i386/exceptions.h"
+#include "arch/i386/pic.h"
+#include "arch/i386/ps2.h"
+#include "arch/i386/keyboard.h"
+#include "arch/i386/terminal.h"
 #include "printf.h"
 #include "log.h"
-#include "pci.h"
-#include "ide.h"
+#include "arch/i386/pci.h"
+#include "arch/i386/ide.h"
 
 extern "C" void kmain() {
     terminal::clear();

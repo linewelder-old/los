@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include "asm.h"
 #include "exceptions.h"
-#include "log.h"
+#include "../../log.h"
 #include "pic.h"
 
 namespace ps2 {

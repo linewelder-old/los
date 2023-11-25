@@ -6,7 +6,7 @@
 #include "gdt.h"
 #include "idt.h"
 #include "terminal.h"
-#include "printf.h"
+#include "../../printf.h"
 
 void kpanic(const char* format, ...) {
     va_list args;

@@ -2,7 +2,7 @@
 
 #include <stdarg.h>
 
-#include "terminal.h"
+#include "arch/i386/terminal.h"
 #include "printf.h"
 
 void log(const char* severity, const char* file, int line, const char* format, ...) {
