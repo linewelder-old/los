@@ -1,7 +1,7 @@
 #include <arch/i386/pci.h>
 
 #include <arch/i386/asm.h>
-#include <log.h>
+#include <kernel/log.h>
 
 namespace pci {
     static constexpr uint16_t CONFIG_ADDRESS_PORT = 0xcf8;

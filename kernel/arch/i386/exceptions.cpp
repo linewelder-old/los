@@ -6,7 +6,7 @@
 #include <arch/i386/gdt.h>
 #include <arch/i386/idt.h>
 #include <arch/i386/terminal.h>
-#include <printf.h>
+#include <kernel/printf.h>
 
 void kpanic(const char* format, ...) {
     va_list args;

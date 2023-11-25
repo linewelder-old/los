@@ -4,7 +4,7 @@
 #include <arch/i386/asm.h>
 #include <arch/i386/exceptions.h>
 #include <arch/i386/pic.h>
-#include <log.h>
+#include <kernel/log.h>
 
 namespace ps2 {
     static Device devices[2];

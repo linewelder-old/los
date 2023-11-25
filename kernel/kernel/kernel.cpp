@@ -10,8 +10,8 @@
 #include <arch/i386/terminal.h>
 #include <arch/i386/pci.h>
 #include <arch/i386/ide.h>
-#include <log.h>
-#include <printf.h>
+#include <kernel/log.h>
+#include <kernel/printf.h>
 
 extern "C" void kmain() {
     terminal::clear();
