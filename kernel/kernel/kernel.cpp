@@ -12,6 +12,7 @@
 #include <arch/i386/ide.h>
 #include <kernel/log.h>
 #include <kernel/printf.h>
+#include <kernel/kpanic.h>
 
 extern "C" void kmain() {
     terminal::clear();

@@ -5,6 +5,7 @@
 #include <arch/i386/exceptions.h>
 #include <arch/i386/pic.h>
 #include <kernel/log.h>
+#include <kernel/kpanic.h>
 
 namespace ps2 {
     static Device devices[2];
