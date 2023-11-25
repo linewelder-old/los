@@ -6,8 +6,8 @@ DEP_DIR := $(BUILD_DIR)/.deps
 
 AS := i686-elf-as
 
-CXX := i686-elf-g++
-CXXFLAGS := -fno-exceptions -fno-rtti -ffreestanding -nostdlib -O2 -Wall -Wextra -mgeneral-regs-only
+CXXFLAGS := -fno-exceptions -fno-rtti -ffreestanding -nostdlib \
+	        -O2 -Wall -Wextra -mgeneral-regs-only
 CXX_DEP_FLAGS = -MT $@ -MMD -MP -MF $(DEP_DIR)/$*.cpp.Td
 
 SRCS := $(shell find $(SRC_DIR) -type f -name '*.cpp' -or -name '*.s')
