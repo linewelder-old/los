@@ -354,6 +354,9 @@ namespace ide {
         channel.wait_not_busy();
 
         uint8_t drive_select_value = 0xa0;
+        if (address_mode != AddressMode::CHS) {
+            drive_select_value |= 1 << 6;
+        }
         if (drive_type == DriveType::SLAVE) {
             drive_select_value |= 1 << 4;
         }
