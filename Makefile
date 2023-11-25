@@ -4,9 +4,6 @@ ISO_DIR := isodir
 
 all: $(TARGET_ISO)
 
-run: kernel
-	qemu-system-i386 -kernel $(TARGET_BIN)
-
 clean:
 	cd kernel; make clean
 
@@ -17,7 +14,7 @@ clean:
 kernel:
 	cd kernel; make
 
-.PHONY: all run clean kernel
+.PHONY: all clean kernel
 
 $(TARGET_ISO): $(ISO_DIR)/boot/los.bin $(ISO_DIR)/boot/grub/grub.cfg
 	grub-mkrescue -o $@ $(ISO_DIR)
