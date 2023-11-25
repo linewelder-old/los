@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "pci.h"
+#include <arch/i386/pci.h>
 
 namespace ide {
     enum class ChannelType {

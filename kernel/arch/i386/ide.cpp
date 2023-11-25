@@ -1,7 +1,7 @@
-#include "ide.h"
+#include <arch/i386/ide.h>
 
-#include "asm.h"
-#include "../../log.h"
+#include <arch/i386/asm.h>
+#include <log.h>
 
 namespace ide {
     // Flags in the Status register.

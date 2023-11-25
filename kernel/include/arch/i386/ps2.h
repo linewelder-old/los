@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdint.h>
-#include "idt.h"
+#include <arch/i386/idt.h>
 
 namespace ps2 {
     class Device {

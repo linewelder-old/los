@@ -1,4 +1,4 @@
-#include "gdt.h"
+#include <arch/i386/gdt.h>
 
 namespace gdt {
     static EncodedGdtEntry gdt[3];

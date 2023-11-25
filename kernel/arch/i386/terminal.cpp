@@ -1,4 +1,4 @@
-#include "terminal.h"
+#include <arch/i386/terminal.h>
 
 #include <stdint.h>
 #include <stddef.h>

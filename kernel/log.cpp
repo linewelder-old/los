@@ -1,9 +1,9 @@
-#include "log.h"
+#include <log.h>
 
 #include <stdarg.h>
 
-#include "arch/i386/terminal.h"
-#include "printf.h"
+#include <arch/i386/terminal.h>
+#include <printf.h>
 
 void log(const char* severity, const char* file, int line, const char* format, ...) {
     va_list args;

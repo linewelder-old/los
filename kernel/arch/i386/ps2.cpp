@@ -1,10 +1,10 @@
-#include "ps2.h"
+#include <arch/i386/ps2.h>
 
 #include <stdint.h>
-#include "asm.h"
-#include "exceptions.h"
-#include "../../log.h"
-#include "pic.h"
+#include <arch/i386/asm.h>
+#include <arch/i386/exceptions.h>
+#include <arch/i386/pic.h>
+#include <log.h>
 
 namespace ps2 {
     static Device devices[2];

@@ -1,12 +1,12 @@
-#include "exceptions.h"
+#include <arch/i386/exceptions.h>
 
 #include <stdarg.h>
 
-#include "asm.h"
-#include "gdt.h"
-#include "idt.h"
-#include "terminal.h"
-#include "../../printf.h"
+#include <arch/i386/asm.h>
+#include <arch/i386/gdt.h>
+#include <arch/i386/idt.h>
+#include <arch/i386/terminal.h>
+#include <printf.h>
 
 void kpanic(const char* format, ...) {
     va_list args;

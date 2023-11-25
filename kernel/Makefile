@@ -1,13 +1,15 @@
 TARGET_BIN := ../los.bin
 
 BUILD_DIR := ../build/kernel
+INCLUDE_DIR := ./include
 SRC_DIR := .
 DEP_DIR := $(BUILD_DIR)/.deps
 
 AS := i686-elf-as
 
 CXXFLAGS := -fno-exceptions -fno-rtti -ffreestanding -nostdlib \
-	        -O2 -Wall -Wextra -mgeneral-regs-only
+	        -O2 -Wall -Wextra -mgeneral-regs-only \
+			-I$(INCLUDE_DIR)
 CXX_DEP_FLAGS = -MT $@ -MMD -MP -MF $(DEP_DIR)/$*.cpp.Td
 
 SRCS := $(shell find $(SRC_DIR) -type f -name '*.cpp' -or -name '*.s')

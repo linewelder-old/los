@@ -1,4 +1,4 @@
-#include "idt.h"
+#include <arch/i386/idt.h>
 
 namespace idt {
     static EncodedIdtEntry idt[256];
