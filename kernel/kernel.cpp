@@ -80,7 +80,5 @@ extern "C" void kmain() {
     enable_interrupts();
 
     terminal::write_cstr("\nYou can type\n\n");
-    for (;;) {
-        asm volatile("hlt");
-    }
+    for (;;) hlt();
 }

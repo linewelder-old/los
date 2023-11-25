@@ -16,7 +16,7 @@ void kpanic(const char* format, ...) {
     terminal::write_cstr("Kernel panic! ");
     vprintf(format, args);
     disable_interrupts();
-    for (;;) asm volatile("hlt");
+    for (;;) hlt();
 }
 
 static constexpr char const* TABLE_NAME[] = {

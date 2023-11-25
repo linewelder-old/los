@@ -56,6 +56,10 @@ inline void enable_interrupts() {
     asm volatile("sti");
 }
 
+inline void hlt() {
+    asm volatile("hlt");
+}
+
 /**
  * To be used in polling loops.
  */
