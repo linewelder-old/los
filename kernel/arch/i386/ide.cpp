@@ -304,10 +304,9 @@ namespace ide {
 
     /**
      * Access the drive (read or write).
-     * NOTE: Since LBA is a uint32_t, we can only access 2TB.
      */
     PollingResult Device::access(
-        Direction direction, uint32_t lba, uint8_t sector_count, void* buffer) const
+        Direction direction, uint64_t lba, uint8_t sector_count, void* buffer) const
     {
         enum class AddressMode {
             CHS,
@@ -319,28 +318,30 @@ namespace ide {
 
         if (lba >= 0x1000'0000) {
             address_mode = AddressMode::LBA48;
-            lba_io[0] = (lba & 0x0000'00ff);
-            lba_io[1] = (lba & 0x0000'ff00) >> 8;
-            lba_io[2] = (lba & 0x00ff'0000) >> 16;
-            lba_io[3] = (lba & 0xff00'0000) >> 24;
-            lba_io[4] = 0;
-            lba_io[5] = 0;
+            lba_io[0] = (lba & 0x0000'0000'00ff);
+            lba_io[1] = (lba & 0x0000'0000'ff00) >> 8;
+            lba_io[2] = (lba & 0x0000'00ff'0000) >> 16;
+            lba_io[3] = (lba & 0x0000'ff00'0000) >> 24;
+            lba_io[4] = (lba & 0x00ff'0000'0000) >> 32;
+            lba_io[5] = (lba & 0xff00'0000'0000) >> 40;
             head      = 0;
         } else if (features & FEATURES_SUPPORTS_LBA) {
             address_mode = AddressMode::LBA28;
-            lba_io[0] = (lba & 0x000'00ff);
-            lba_io[1] = (lba & 0x000'ff00) >> 8;
-            lba_io[2] = (lba & 0x0ff'0000) >> 16;
+            uint32_t lba_low = (uint32_t)lba;
+            lba_io[0] = (lba_low & 0x000'00ff);
+            lba_io[1] = (lba_low & 0x000'ff00) >> 8;
+            lba_io[2] = (lba_low & 0x0ff'0000) >> 16;
             lba_io[3] = 0;
             lba_io[4] = 0;
             lba_io[5] = 0;
-            head      = (lba & 0xf00'0000) >> 24;
+            head      = (lba_low & 0xf00'0000) >> 24;
         } else {
             address_mode = AddressMode::CHS;
 
-            uint8_t sector = (lba % 63) + 1;
-            uint16_t cylinder = (lba + 1 - sector) / (16 * 63);
-            head = (lba + 1 - sector) % (16 * 63) / 63;
+            uint32_t lba_low = (uint32_t)lba;
+            uint8_t sector = (lba_low % 63) + 1;
+            uint16_t cylinder = (lba_low + 1 - sector) / (16 * 63);
+            head = (lba_low + 1 - sector) % (16 * 63) / 63;
 
             lba_io[0] = sector;
             lba_io[1] = cylinder & 0xff;
@@ -393,17 +394,11 @@ namespace ide {
         }
     }
 
-    /**
-     * NOTE: Since LBA is a uint32_t, we can only access 2TB.
-     */
-    PollingResult Device::read(uint32_t lba, uint8_t sector_count, void* buffer) const {
+    PollingResult Device::read(uint64_t lba, uint8_t sector_count, void* buffer) const {
         return access(Direction::READ, lba, sector_count, buffer);
     }
 
-    /**
-     * NOTE: Since LBA is a uint32_t, we can only access 2TB.
-     */
-    void Device::write(uint32_t lba, uint8_t sector_count, void* buffer) const {
+    void Device::write(uint64_t lba, uint8_t sector_count, void* buffer) const {
         access(Direction::WRITE, lba, sector_count, buffer);
     }
 
