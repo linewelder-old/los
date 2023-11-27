@@ -24,7 +24,12 @@ namespace idt {
         return level << 5;
     }
 
-    struct InterruptFrame;
+    struct InterruptFrame {
+        uint32_t ip;
+        uint16_t cs;
+        uint32_t flags;
+    };
+
     typedef void (*Handler)(InterruptFrame*);
     typedef void (*ErrorCodeHandler)(InterruptFrame*, int);
 
