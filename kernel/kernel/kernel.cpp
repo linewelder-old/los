@@ -44,7 +44,9 @@ extern "C" void kmain() {
 
         terminal::putchar('\n');
     }
-    if (!keyboard_found) kpanic("No keyboard");
+    if (!keyboard_found) {
+        LOG_ERROR("No keyboard");
+    }
 
     LOG_INFO("Detecting connected PCI devices...");
     pci::init();
