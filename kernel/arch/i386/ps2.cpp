@@ -152,6 +152,15 @@ namespace ps2 {
         return device_count;
     }
 
+    Option<const Device&> find_device_with_type(uint16_t type) {
+        for (int i = 0; i < device_count; i++) {
+            if (devices[i].get_type() == type) {
+                return devices[i];
+            }
+        }
+        return {};
+    }
+
     void Device::send(uint8_t data) const {
         if (this->id == 1) {
             outb(CONTROL_PORT, 0xd4);

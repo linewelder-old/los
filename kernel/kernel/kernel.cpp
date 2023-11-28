@@ -28,23 +28,18 @@ extern "C" void kmain() {
     LOG_INFO("Initializing the PS/2 controller...");
     ps2::init();
 
-    bool keyboard_found = false;
     terminal::write_cstr("\nConnected PS/2 devices:\n");
     for (int i = 0; i < ps2::get_device_count(); i++) {
         const ps2::Device& device = ps2::get_device(i);
-        printf("- %s (type: %x)",
+        printf("- %s (type: %x)\n",
             device.get_type_name(), device.get_type());
-
-        if (!keyboard_found && device.get_type() == 0xab83) {
-            device.enable_scanning();
-            device.set_interrupt_handler(keyboard::irq_handler);
-            keyboard_found = true;
-            terminal::write_cstr(" [Primary keyboard]");
-        }
-
-        terminal::putchar('\n');
     }
-    if (!keyboard_found) {
+
+    Option<const ps2::Device&> keyboard = ps2::find_device_with_type(0xab83);
+    if (keyboard.has_value()) {
+        keyboard->enable_scanning();
+        keyboard->set_interrupt_handler(keyboard::irq_handler);
+    } else {
         LOG_ERROR("No keyboard");
     }
 

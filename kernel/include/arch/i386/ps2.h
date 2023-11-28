@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <arch/i386/idt.h>
+#include <util/option.h>
 
 namespace ps2 {
     class Device {
@@ -30,6 +31,8 @@ namespace ps2 {
 
     /// 1 or 2.
     int get_device_count();
+
+    Option<const Device&> find_device_with_type(uint16_t type);
 
     bool try_poll(uint8_t& output, int max_cycles = 500);
 
