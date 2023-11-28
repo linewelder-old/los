@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <util/option.h>
 
 namespace pci {
     class Function {
@@ -42,6 +43,8 @@ namespace pci {
     const Function& get_function(size_t index);
 
     size_t get_function_count();
+
+    Option<const Function&> find_function_with_class(uint16_t full_class);
 
     void init();
 }

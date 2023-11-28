@@ -54,11 +54,14 @@ extern "C" void kmain() {
             func.get_bus(), func.get_device(), func.get_function(),
             func.get_full_class(),
             func.get_vendor(), func.get_device_id());
+    }
 
-        // PCI IDE
-        if (func.get_full_class() == 0x0101) {
-            ide::init(func);
-        }
+    Option<const pci::Function&> ide_controller =
+        pci::find_function_with_class(0x0101);
+    if (ide_controller.has_value()) {
+        ide::init(ide_controller.get_value());
+    } else {
+        LOG_ERROR("No IDE controller");
     }
 
     terminal::write_cstr("\nConnected disks:\n");

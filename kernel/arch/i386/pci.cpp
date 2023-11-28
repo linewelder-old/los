@@ -75,6 +75,15 @@ namespace pci {
         return function_count;
     }
 
+    Option<const Function&> find_function_with_class(uint16_t full_class) {
+        for (size_t i = 0; i < function_count; i++) {
+            if (functions[i].get_full_class() == full_class) {
+                return functions[i];
+            }
+        }
+        return {};
+    }
+
     static void add_function(Function function) {
         if (function_count >= MAX_FUNCTION_COUNT) {
             LOG_ERROR("Two many connected PCI device functions. The kernel supports up to 256.");
