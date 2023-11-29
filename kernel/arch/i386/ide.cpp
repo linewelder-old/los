@@ -394,12 +394,13 @@ namespace ide {
         }
     }
 
-    PollingResult Device::read(uint64_t lba, uint8_t sector_count, void* buffer) const {
-        return access(Direction::READ, lba, sector_count, buffer);
+    bool Device::read(uint64_t lba, uint8_t sector_count, void* buffer) const {
+        return access(Direction::READ, lba, sector_count, buffer) == PollingResult::SUCCESS;
     }
 
-    void Device::write(uint64_t lba, uint8_t sector_count, void* buffer) const {
+    bool Device::write(uint64_t lba, uint8_t sector_count, void* buffer) const {
         access(Direction::WRITE, lba, sector_count, buffer);
+        return true;
     }
 
     static ide::Device disks[4];
