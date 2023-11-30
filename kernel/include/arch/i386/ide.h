@@ -4,7 +4,7 @@
 #include <stddef.h>
 
 #include <arch/i386/pci.h>
-#include <block/block.h>
+#include <disk/disk.h>
 
 namespace ide {
     enum class ChannelType {
@@ -57,6 +57,8 @@ namespace ide {
 
         bool read(uint64_t lba, uint8_t sector_count, void* buffer) const;
         bool write(uint64_t lba, uint8_t sector_count, void* buffer) const;
+
+        operator IDisk() const;
 
         ChannelType channel_type;
         DriveType drive_type;

@@ -403,6 +403,19 @@ namespace ide {
         return true;
     }
 
+    static const IDiskVmt idisk_vmt {
+        .read = [](const void* device, uint64_t lba, uint8_t sector_count, void* buffer) -> bool {
+            return ((Device*)device)->read(lba, sector_count, buffer);
+        },
+        .write = [](const void* device, uint64_t lba, uint8_t sector_count, void* buffer) -> bool {
+            return ((Device*)device)->write(lba, sector_count, buffer);
+        },
+    };
+
+    Device::operator IDisk() const {
+        return IDisk(this, &idisk_vmt);
+    }
+
     static ide::Device disks[4];
     static size_t disk_count = 0;
 
