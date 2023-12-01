@@ -2,6 +2,7 @@
 
 #include <arch/i386/asm.h>
 #include <kernel/log.h>
+#include <util/inplace_vector.h>
 
 namespace pci {
     static constexpr uint16_t CONFIG_ADDRESS_PORT = 0xcf8;
@@ -63,35 +64,23 @@ namespace pci {
         return (dword >> offset_within_dword) & 0xff;
     }
 
-    static constexpr size_t MAX_FUNCTION_COUNT = 256;
-    static Function functions[MAX_FUNCTION_COUNT];
-    static size_t function_count = 0;
+    static InplaceVector<Function, 256> functions;
 
     const Function& get_function(size_t index) {
         return functions[index];
     }
 
     size_t get_function_count() {
-        return function_count;
+        return functions.get_count();
     }
 
     Option<const Function&> find_function_with_class(uint16_t full_class) {
-        for (size_t i = 0; i < function_count; i++) {
+        for (size_t i = 0; i < functions.get_count(); i++) {
             if (functions[i].get_full_class() == full_class) {
                 return functions[i];
             }
         }
         return {};
-    }
-
-    static void add_function(Function function) {
-        if (function_count >= MAX_FUNCTION_COUNT) {
-            LOG_ERROR("Two many connected PCI device functions. The kernel supports up to 256.");
-            return;
-        }
-
-        functions[function_count] = function;
-        function_count++;
     }
 
     uint8_t Function::get_bus() const {
@@ -147,7 +136,10 @@ namespace pci {
     static void check_bus(uint8_t bus);
 
     static void check_function(Function func) {
-        add_function(func);
+        if (!functions.push_back(func)) {
+            LOG_ERROR("Two many connected PCI device functions. The kernel supports up to %d.",
+                functions.get_capacity());
+        }
 
         if (func.get_full_class() == 0x0604) {
             uint8_t secondary_bus = func.get_secondary_bus();
