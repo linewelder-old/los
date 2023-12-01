@@ -13,10 +13,16 @@
 #include <kernel/log.h>
 #include <kernel/printf.h>
 #include <kernel/kpanic.h>
+#include <kernel/multiboot.h>
 
-extern "C" void kmain() {
+extern "C"
+void kmain(multiboot_info_t* multiboot_info, uint32_t magic) {
     terminal::clear();
     terminal::write_cstr("Los\n");
+
+    if (magic != MULTIBOOT_BOOTLOADER_MAGIC) {
+        kpanic("Invalid Multiboot magic number");
+    }
 
     gdt::init();
     idt::init();

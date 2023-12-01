@@ -23,6 +23,8 @@ _start:
         cli
         mov     $stack_top, %esp
 
+        push    %eax   // Multiboot magic number.
+        push    %ebx   // Multiboot info pointer.
         call    kmain
 
         cli
