@@ -142,11 +142,11 @@ namespace ps2 {
         }
     }
 
-    const Device& get_device(int id) {
+    const Device& get_device(size_t id) {
         return devices[id];
     }
 
-    int get_device_count() {
+    size_t get_device_count() {
         return devices.get_count();
     }
 

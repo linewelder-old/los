@@ -29,7 +29,7 @@ extern "C" void kmain() {
     ps2::init();
 
     terminal::write_cstr("\nConnected PS/2 devices:\n");
-    for (int i = 0; i < ps2::get_device_count(); i++) {
+    for (size_t i = 0; i < ps2::get_device_count(); i++) {
         const ps2::Device& device = ps2::get_device(i);
         printf("- %s (type: %x)\n",
             device.get_type_name(), device.get_type());
