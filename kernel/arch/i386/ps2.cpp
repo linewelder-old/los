@@ -121,7 +121,6 @@ namespace ps2 {
         io_wait();
         if (read_config_byte() & (1 << 5)) {
             LOG_INFO("PS/2 controller has one channel.");
-            device_count = 1;
             two_channels = false;
         } else {
             outb(CONTROL_PORT, 0xa7); // Disable device 1.
