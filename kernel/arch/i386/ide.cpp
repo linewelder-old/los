@@ -2,6 +2,7 @@
 
 #include <arch/i386/asm.h>
 #include <kernel/log.h>
+#include <util/inplace_vector.h>
 
 namespace ide {
     // Flags in the Status register.
@@ -416,15 +417,14 @@ namespace ide {
         return IDisk(this, &idisk_vmt);
     }
 
-    static ide::Device disks[4];
-    static size_t disk_count = 0;
+    static InplaceVector<ide::Device, 4> disks;
 
     const ide::Device& get_disk(size_t id) {
         return disks[id];
     }
 
     size_t get_disk_count() {
-        return disk_count;
+        return disks.get_count();
     }
 
     void init(const pci::Function& func) {
@@ -453,8 +453,7 @@ namespace ide {
 
                 switch (result.status) {
                 case IdentifyResultStatus::Success:
-                    disks[disk_count] = disk;
-                    disk_count++;
+                    disks.push_back(disk);
                     break;
                 case IdentifyResultStatus::NoDevice:
                     break;
