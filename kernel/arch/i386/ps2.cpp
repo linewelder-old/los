@@ -6,10 +6,10 @@
 #include <arch/i386/pic.h>
 #include <kernel/log.h>
 #include <kernel/kpanic.h>
+#include <util/inplace_vector.h>
 
 namespace ps2 {
-    static Device devices[2];
-    static int device_count = 0;
+    static InplaceVector<Device, 2> devices;
 
     static constexpr uint16_t CONTROL_PORT = 0x64;
     static constexpr uint16_t DATA_PORT = 0x60;
@@ -76,9 +76,8 @@ namespace ps2 {
         // A mouse sends its device type after test.
         try_poll(response);
 
-        devices[device_count] = Device(port);
-        Device& device = devices[device_count];
-        device_count++;
+        devices.push_back(Device(port));
+        Device& device = devices[devices.get_count() - 1];
         LOG_INFO("PS/2 device %d reset succeeded.",
             port);
 
@@ -148,11 +147,11 @@ namespace ps2 {
     }
 
     int get_device_count() {
-        return device_count;
+        return devices.get_count();
     }
 
     Option<const Device&> find_device_with_type(uint16_t type) {
-        for (int i = 0; i < device_count; i++) {
+        for (size_t i = 0; i < devices.get_count(); i++) {
             if (devices[i].get_type() == type) {
                 return devices[i];
             }
