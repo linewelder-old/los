@@ -15,14 +15,40 @@
 #include <kernel/kpanic.h>
 #include <kernel/multiboot.h>
 
+static uint32_t detect_available_ram(multiboot_info_t* multiboot_info) {
+    bool mmap_valid = multiboot_info->flags & (1 << 6);
+    if (!mmap_valid) {
+        kpanic("Invalid memory map");
+    }
+
+    uint32_t ram_available = 0;
+    for (
+        uint32_t offset = 0;
+        offset < multiboot_info->mmap_length;
+        offset += sizeof(multiboot_memory_map_t))
+    {
+        multiboot_memory_map_t* block =
+            (multiboot_memory_map_t*)(multiboot_info->mmap_addr + offset);
+
+        // Available RAM above 1M.
+        if (block->type == MULTIBOOT_MEMORY_AVAILABLE && block->addr >= 0x10'0000) {
+            ram_available += (uint32_t)block->len;
+        }
+    }
+
+    return ram_available;
+}
+
 extern "C"
 void kmain(multiboot_info_t* multiboot_info, uint32_t magic) {
     terminal::clear();
-    terminal::write_cstr("Los\n");
 
     if (magic != MULTIBOOT_BOOTLOADER_MAGIC) {
         kpanic("Invalid Multiboot magic number");
     }
+
+    uint32_t ram_available = detect_available_ram(multiboot_info);
+    printf("Los (%dMB RAM Available)\n", ram_available / 1024 / 1024);
 
     gdt::init();
     idt::init();
