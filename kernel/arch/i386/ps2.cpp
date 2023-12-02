@@ -2,10 +2,8 @@
 
 #include <stdint.h>
 #include <arch/i386/asm.h>
-#include <arch/i386/exceptions.h>
 #include <arch/i386/pic.h>
 #include <kernel/log.h>
-#include <kernel/kpanic.h>
 #include <util/inplace_vector.h>
 
 namespace ps2 {
@@ -103,10 +101,12 @@ namespace ps2 {
         outb(CONTROL_PORT, 0xaa); // Perform self test.
         uint8_t response = 0;
         if (!try_poll(response)) {
-            kpanic("PS/2 controller self test failed, no response");
+            LOG_ERROR("PS/2 controller self test failed, no response");
+            return;
         } else if (response != 0x55) {
-            kpanic("PS/2 controller self test failed, received 0x%x instead of 0x55",
+            LOG_ERROR("PS/2 controller self test failed, received 0x%x instead of 0x55",
                 response);
+            return;
         }
 
         // On some devices the controller resets after the test.
@@ -167,17 +167,21 @@ namespace ps2 {
         outb(DATA_PORT, data);
     }
 
-    static void expect_ack(const char* what, int device_id) {
+    static bool expect_ack(const char* what, int device_id) {
         uint8_t response = 0;
         if (!try_poll(response)) {
-            kpanic("%s (PS/2 device %d) failed, didn't receive device response",
+            LOG_ERROR("%s (PS/2 device %d) failed, didn't receive device response",
                 what, device_id);
+            return false;
         }
 
         if (response != 0xfa) {
-            kpanic("%s (PS/2 device %d) failed, received 0x%x instead of 0xfa",
+            LOG_ERROR("%s (PS/2 device %d) failed, received 0x%x instead of 0xfa",
                 what, device_id, response);
+            return false;
         }
+
+        return true;
     }
 
     void Device::disable_scanning() const {
