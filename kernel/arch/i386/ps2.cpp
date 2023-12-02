@@ -39,8 +39,6 @@ namespace ps2 {
             return false;
         }
 
-        LOG_INFO("PS/2 port %d test succeeded.",
-            port);
         return true;
     }
 
@@ -76,8 +74,6 @@ namespace ps2 {
 
         devices.push_back(Device(port));
         Device& device = devices[devices.get_count() - 1];
-        LOG_INFO("PS/2 device %d reset succeeded.",
-            port);
 
         device.disable_scanning();
         device.identify();
