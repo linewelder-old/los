@@ -67,14 +67,6 @@ void kmain(multiboot_info_t* multiboot_info, uint32_t magic) {
             device.get_type_name(), device.get_type());
     }
 
-    Option<const ps2::Device&> keyboard = ps2::find_device_with_type(0xab83);
-    if (keyboard.has_value()) {
-        keyboard->enable_scanning();
-        keyboard->set_interrupt_handler(keyboard::irq_handler);
-    } else {
-        LOG_ERROR("No keyboard");
-    }
-
     LOG_INFO("Detecting connected PCI devices...");
     pci::init();
 
@@ -104,14 +96,22 @@ void kmain(multiboot_info_t* multiboot_info, uint32_t magic) {
             (const char*[]){ "ATA", "ATAPI" }[(int)disk.interface]);
     };
 
-    keyboard::set_callback([](keyboard::KeyEventArgs args) {
-        if (!args.released && args.character) {
-            terminal::putchar(args.character);
-        }
-    });
-    pic::clear_mask(1);
-    enable_interrupts();
+    Option<const ps2::Device&> keyboard = ps2::find_device_with_type(0xab83);
+    if (keyboard.has_value()) {
+        keyboard->set_interrupt_handler(keyboard::irq_handler);
+        keyboard::set_callback([](keyboard::KeyEventArgs args) {
+            if (!args.released && args.character) {
+                terminal::putchar(args.character);
+            }
+        });
 
-    terminal::write_cstr("\nYou can type\n\n");
+        keyboard->enable_scanning();
+        pic::clear_mask(1);
+        enable_interrupts();
+
+        terminal::write_cstr("\nYou can type\n\n");
+    } else {
+        terminal::write_cstr("\nNo keyboard.");
+    }
     for (;;) hlt();
 }
