@@ -12,6 +12,13 @@ static int print_number(int value, int base, int max_length) {
         terminal::putchar('0');
     }
 
+    if (value < 0) {
+        if (written == max_length) return -1;
+        written++;
+        terminal::putchar('-');
+        value = -value;
+    }
+
     constexpr int BUF_SIZE = 12;
     char buf[BUF_SIZE];
     int buf_start = BUF_SIZE;
