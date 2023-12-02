@@ -159,7 +159,9 @@ namespace ps2 {
         if (this->id == 1) {
             outb(CONTROL_PORT, 0xd4);
         }
-        while (inb(CONTROL_PORT) & 2);
+        while (inb(CONTROL_PORT) & 2) {
+            tiny_delay();
+        }
         outb(DATA_PORT, data);
     }
 
