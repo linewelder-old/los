@@ -50,7 +50,7 @@ namespace ps2 {
 
         uint8_t response = 0;
         if (!try_poll(response)) {
-            LOG_ERROR("PS/2 device %d reset failed, no response.",
+            LOG_WARN("PS/2 device %d reset failed, no response.",
                 port);
             return;
         } else if (response != 0xfa) {
