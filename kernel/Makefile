@@ -5,9 +5,9 @@ INCLUDE_DIR := ./include
 SRC_DIR := .
 DEP_DIR := $(BUILD_DIR)/.deps
 
-AS := ~/opt/cross/bin/i686-elf-as
+AS := i686-elf-as
 
-CXX := ~/opt/cross/bin/i686-elf-g++
+CXX := i686-elf-g++
 CXXFLAGS := -fno-exceptions -fno-rtti -ffreestanding -nostdlib \
 	        -O2 -Wall -Wextra -mgeneral-regs-only \
 			-I$(INCLUDE_DIR)
