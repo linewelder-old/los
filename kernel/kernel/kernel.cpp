@@ -60,10 +60,10 @@ void kmain(multiboot_info_t* multiboot_info, uint32_t magic) {
     LOG_INFO("Initializing the PS/2 controller...");
     ps2::init();
 
-    terminal::write_cstr("\nConnected PS/2 devices:\n");
+    terminal::write_cstr("Connected PS/2 devices:\n");
     for (size_t i = 0; i < ps2::get_device_count(); i++) {
         const ps2::Device& device = ps2::get_device(i);
-        printf("- %s (type: %x)\n",
+        printf("  - %s (type: %x)\n",
             device.get_type_name(), device.get_type());
     }
 
@@ -78,11 +78,11 @@ void kmain(multiboot_info_t* multiboot_info, uint32_t magic) {
     LOG_INFO("Detecting connected PCI devices...");
     pci::init();
 
-    terminal::write_cstr("\nConnected PCI devices:\n");
+    terminal::write_cstr("Connected PCI devices:\n");
     for (size_t i = 0; i < pci::get_function_count(); i++) {
         const pci::Function& func = pci::get_function(i);
         printf(
-            "%d:%d.%d Class: %x Vendor: %x Device: %x\n",
+            "  %d:%d.%d Class: %x Vendor: %x Device: %x\n",
             func.get_bus(), func.get_device(), func.get_function(),
             func.get_full_class(),
             func.get_vendor(), func.get_device_id());
@@ -96,10 +96,10 @@ void kmain(multiboot_info_t* multiboot_info, uint32_t magic) {
         LOG_ERROR("No IDE controller");
     }
 
-    terminal::write_cstr("\nConnected disks:\n");
+    terminal::write_cstr("Connected disks:\n");
     for (size_t i = 0; i < ide::get_disk_count(); i++) {
         const ide::Device& disk = ide::get_disk(i);
-        printf("- %s (%d Kb) Inteface: %s\n",
+        printf("  - %s (%d Kb) Inteface: %s\n",
             disk.model, disk.size / 2,
             (const char*[]){ "ATA", "ATAPI" }[(int)disk.interface]);
     };
